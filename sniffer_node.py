@@ -5,7 +5,6 @@ import subprocess
 import traceback
 from scapy.all import sniff, IP, show_interfaces, IFACES
 
-
 class NetworkNode:
     def __init__(self):
         self.os_type = platform.system()

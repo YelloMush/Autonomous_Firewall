@@ -16,15 +16,6 @@ def get_database_connection():
     connection.row_factory = sqlite3.Row
     return connection
 
-def train_dummy_baseline():
-    print("Training AI on clean baseline traffic...")
-    dummy_clean_data = [
-        {"packet_count": 5, "total_bytes": 300, "packet_rate": 2.5, "byte_rate": 150.0, "entropy": 0.0},
-        {"packet_count": 6, "total_bytes": 350, "packet_rate": 3.0, "byte_rate": 175.0, "entropy": 0.1},
-        {"packet_count": 4, "total_bytes": 250, "packet_rate": 2.0, "byte_rate": 125.0, "entropy": 0.0}
-    ]
-    ai_engine.train_baseline(dummy_clean_data)
-
 @app.on_event("startup")
 async def setup_system():
     print("Initializing SQLite Database...")
@@ -49,10 +40,9 @@ async def setup_system():
     connection.commit()
     connection.close()
     
-    # Train the AI and start the monitoring loop
-    train_dummy_baseline()
+    # Start the monitoring and calibration loop
     asyncio.create_task(anomaly_detection_loop())
-    print("Database and AI Engine ready.")
+    print("Database ready. Starting Boot Sequence...")
 
 @app.post("/ingest_packet")
 async def ingest_packet(request: Request):
@@ -73,26 +63,52 @@ async def ingest_packet(request: Request):
     return {"status": "packet_saved"}
 
 async def anomaly_detection_loop():
-    """Runs continuously in the background to check the sliding window."""
-    while True:
+    """Handles both the initial calibration phase and the continuous detection loop."""
+    print("\n" + "="*40)
+    print("PHASE 1: AI CALIBRATION IN PROGRESS")
+    print("Ensure the sniffer is running. Please browse the web normally.")
+    print("Gathering baseline data for 20 seconds...")
+    print("="*40 + "\n")
+    
+    baseline_data = []
+    calibration_time = 20  # Seconds to observe normal traffic
+    
+    for i in range(calibration_time):
         await asyncio.sleep(ai_engine.slide_step)
-        
         current_time = time.time()
         features = ai_engine.extract_features(current_time)
         
-        if features and features["packet_count"] > 10:
-            # We only check for anomalies if there is enough traffic to analyze
+        if features:
+            baseline_data.append(features)
+            print(f"Calibrating... {len(baseline_data)}/{calibration_time} data points captured.")
+            
+    if len(baseline_data) > 5:
+        ai_engine.train_baseline(baseline_data)
+        print("\n" + "="*40)
+        print("PHASE 2: CALIBRATION COMPLETE. AI IS NOW ARMED.")
+        print("="*40 + "\n")
+    else:
+        print("\n[ERROR] Not enough traffic captured during calibration. Is the sniffer running? Please restart the server.")
+        return
+
+    # Phase 2: Live Threat Detection
+    while True:
+        await asyncio.sleep(ai_engine.slide_step)
+        current_time = time.time()
+        features = ai_engine.extract_features(current_time)
+        
+        # We only check for anomalies if there is a noticeable spike in traffic
+        if features and features["packet_count"] > (sum(d["packet_count"] for d in baseline_data) / len(baseline_data)) * 1.5:
             prediction = ai_engine.check_anomaly(features)
             
             if prediction == -1:
-                print("WARNING: AI DETECTED ANOMALOUS TRAFFIC SPIKE.")
-                print("Triggering defensive protocols...")
-                # In a full deployment, this is where we log the most frequent IP to the block database
-                # For now, we log the event
+                print(f"[{time.strftime('%H:%M:%S')}] 🛑 WARNING: AI DETECTED ANOMALOUS TRAFFIC SPIKE.")
+                print(f"      Metrics: {features['packet_count']} packets, {features['total_bytes']} bytes")
+                
                 connection = get_database_connection()
                 connection.execute(
                     "INSERT OR IGNORE INTO blocked_ips (ip, timestamp, reason) VALUES (?, ?, ?)",
-                    ("MULTIPLE_IPS_ANOMALY", current_time, "Isolation Forest triggered")
+                    ("VOLUMETRIC_ANOMALY", current_time, "Isolation Forest triggered")
                 )
                 connection.commit()
                 connection.close()
