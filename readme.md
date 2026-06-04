@@ -6,7 +6,7 @@ This repository contains the core infrastructure, machine learning analytics, an
 
 ## Project Context
 
-* Author: Somraj Sarkar
+* Co-Authors: Somraj Sarkar, Akash Kumar, Wrick Mazumdar
 * Institution: Christ University
 * Program: BSc Computer Science
 
