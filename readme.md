@@ -44,3 +44,38 @@ Now that the backend data pipeline and the AI model are successfully communicati
 1. **Dashboard Visualization UI:** This is the final task for Member 3. You need to build a web frontend (using HTML, CSS, and vanilla JavaScript or a framework like React). This dashboard will fetch data from your `http://127.0.0.1:8000/system_status` endpoint and display live graphs of the traffic and a table of the blocked IPs.
 2. **Linux Deployment and Testing:** Right now, the code is running in a Windows environment using Npcap. To prove the `IPTables` self healing functionality for your college presentation, you will need to run the `sniffer_node.py` on a Linux virtual machine or an Ubuntu Docker container and execute an actual simulated Denial of Service attack against it.
 3. **Code Cleanup:** You can safely delete `sniffer.py` and `test_env.py` from your repository now to keep the project folder clean and professional.
+
+---
+
+## Installation and Setup Guide
+
+To run this project on your local machine, follow these steps in order.
+
+### Prerequisites
+1. **Python 3.10+** must be installed.
+2. **Network Driver:** * **Windows Users:** You MUST download and install [Npcap](https://npcap.com/). During installation, ensure you check the box for *"Install Npcap in WinPcap API-compatible Mode"*.
+   * **Linux Users:** No extra drivers needed, but scripts must be run with `sudo`.
+
+### Step 1: Install Dependencies
+Open your terminal, navigate to the cloned repository folder, and install the required Python libraries using the `requirements.txt` file:
+```bash
+pip install -r requirements.txt
+```
+### Step 2: Boot the AI Core (Terminal 1)
+The database and AI engine must be online before any packets are captured. Open a terminal and run the API server:
+```bash
+python api_server.py
+```
+Wait until the terminal outputs "Database ready. Starting Boot Sequence..."
+
+Note: Open your terminal as administrator.
+
+### Step 3: Start the Network Sensor (Terminal 2)
+Open a second, separate terminal as an Administrator (Windows) or root (Linux). Run the sniffer node:
+
+```bash
+python sniffer_node.py
+```
+* When prompted, type the Index number of your active WiFi or Ethernet connection.
+* The API Server will spend 20 seconds observing your normal traffic to calibrate its AI baseline.
+* Once calibration is complete, the firewall is armed and will actively block IPs that trigger volumetric anomalies.
