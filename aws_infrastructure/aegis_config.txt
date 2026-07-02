@@ -1,0 +1,5 @@
+SQS_QUEUE_URL=https://sqs.ap-south-1.amazonaws.com/619459868389/Aegis-Ingestion-Queue
+VPC_ID=vpc-003c74ae5acdd10b9
+SUBNET_ID=subnet-0bee2bd317be72849
+
+NACL_ID=acl-0f6ba5dd5e1a1657c
