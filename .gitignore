@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Internal notes — not for public repo
+CLOUD_IMPLEMENTATION.txt
+
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# AWS Credentials & Keys — NEVER commit these
+*.pem
+aws_infrastructure/aegis_edge_key.pem
+
+# Database — runtime artifact, not source code
+*.db
+*.db-shm
+*.db-wal
+firewall_logs.db
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

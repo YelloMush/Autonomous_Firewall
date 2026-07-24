@@ -1,78 +1,67 @@
 import sqlite3
 import time
 import os
-import sys
 
-# Change this if your database file has a different name
-DB_NAME = "firewall_logs.db"
+DB_NAME = os.path.join(os.path.dirname(__file__), "..", "core_backend", "firewall_logs.db")
 
-def get_tables(cursor):
-    """Fetch all table names from the SQLite database."""
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    return [t[0] for t in cursor.fetchall() if t[0] != "sqlite_sequence"]
+RESET  = "\033[0m"
+RED    = "\033[91m"
+CYAN   = "\033[96m"
+YELLOW = "\033[93m"
+GREEN  = "\033[92m"
+BOLD   = "\033[1m"
 
-def get_primary_key(cursor, table_name):
-    """Dynamically find the primary key column of a table."""
-    cursor.execute(f"PRAGMA table_info({table_name})")
-    columns = cursor.fetchall()
-    for col in columns:
-        if col[5] == 1: # Column index 5 indicates if it's a primary key (1=True)
-            return col[1] # Column index 1 is the column name
-    return columns[0][1] # Fallback to the first column if no PK is defined
+def get_conn():
+    """Open a read-only WAL-compatible connection."""
+    return sqlite3.connect(f"file:{os.path.abspath(DB_NAME)}?mode=ro",
+                           uri=True, timeout=10, check_same_thread=False)
 
 def live_monitor():
     print("=" * 60)
-    print(f"🛡️  AEGIS LIVE DATABASE MONITOR")
+    print(f"{BOLD}🛡️  AEGIS LIVE DATABASE MONITOR{RESET}")
     print("=" * 60)
-    
+
     if not os.path.exists(DB_NAME):
-        print(f"[!] Database '{DB_NAME}' not found. Waiting for API Server to create it...")
+        print(f"[!] Waiting for AI Core to create the database…")
         while not os.path.exists(DB_NAME):
             time.sleep(1)
-            
+
     try:
-        conn = sqlite3.connect(DB_NAME)
+        conn = get_conn()
         cursor = conn.cursor()
-        
-        tables = get_tables(cursor)
-        if not tables:
-            print("[!] No tables found in the database yet. Waiting...")
-            while not tables:
+
+        # Wait for tables to exist
+        tables = []
+        while not tables:
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = [t[0] for t in cursor.fetchall() if t[0] != "sqlite_sequence"]
+            if not tables:
                 time.sleep(1)
-                tables = get_tables(cursor)
-                
-        print(f"[*] Connected successfully. Monitoring tables: {', '.join(tables)}\n")
-        
-        # Keep track of the last seen ID for each table so we only print NEW rows
-        last_seen_ids = {table: 0 for table in tables}
-        pks = {table: get_primary_key(cursor, table) for table in tables}
-        
+
+        print(f"[*] Connected. Monitoring: {', '.join(tables)}\n")
+
+        last_seen = {t: 0 for t in tables}
+
         while True:
-            for table in tables:
-                pk = pks[table]
-                last_id = last_seen_ids[table]
-                
-                # Fetch only rows that are newer than our last seen ID
-                query = f"SELECT * FROM {table} WHERE {pk} > ? ORDER BY {pk} ASC"
-                cursor.execute(query, (last_id,))
-                new_rows = cursor.fetchall()
-                
-                for row in new_rows:
-                    # Color code output: Red for blocks, Blue for standard metrics/packets
-                    if "block" in table.lower():
-                        print(f"🚨 [NEW THREAT ISOLATED] Table '{table}' -> {row}")
-                    else:
-                        print(f"📥 [PACKET INJECTED] Table '{table}' -> {row}")
-                        
-                    # Update the last seen ID
-                    last_seen_ids[table] = row[0] 
-                    
-            time.sleep(0.5) # Poll twice a second for real-time feel
-            
+            try:
+                for table in tables:
+                    cursor.execute(
+                        f"SELECT * FROM {table} WHERE rowid > ? ORDER BY rowid ASC",
+                        (last_seen[table],)
+                    )
+                    for row in cursor.fetchall():
+                        if "block" in table.lower():
+                            print(f"{RED}{BOLD}🚨 [THREAT ISOLATED]{RESET}  {table} → {row}")
+                        else:
+                            print(f"{CYAN}📥 [PACKET]{RESET}  {table} → {row}")
+                        last_seen[table] = row[0]
+            except sqlite3.OperationalError:
+                pass  # DB briefly locked — just skip this cycle
+
+            time.sleep(0.4)
+
     except KeyboardInterrupt:
-        print("\n[*] Live monitoring terminated by operator.")
-    except Exception as e:
-        print(f"\n[!] Error reading database: {e}")
+        print("\n[*] Monitor terminated.")
     finally:
         if 'conn' in locals():
             conn.close()
