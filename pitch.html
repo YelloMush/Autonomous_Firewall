@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aegis — Cloud-Native Resilience, Autonomously Managed</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #fafaf9; color: #1c1917; }
+  .serif { font-family: 'Playfair Display', Georgia, 'Times New Roman', serif; }
+  h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes subtlePulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+  .fade-up { animation: fadeUp 0.75s ease-out both; }
+  .pipe-dot { position:absolute; border-radius:50%; pointer-events:none; top:50%; transform:translateY(-50%); }
+  ::selection { background:#e7e5e4; }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:#fafaf9; }
+  ::-webkit-scrollbar-thumb { background:#d6d3d1; border-radius:2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ── Muted, sophisticated traffic colours ───────── */
+const TC = {
+  normal  : '#7499B4', /* soft steel-blue  */
+  attack  : '#B36A55', /* terracotta brick */
+  sage    : '#6A9479', /* calm sage-green  */
+  amber   : '#B08850', /* warm amber       */
+};
+
+/* ── SVG Icons (1.5 stroke, minimal) ────────────── */
+const Ico = ({ d, vb='0 0 24 24', cls='w-full h-full', sw=1.5 }) => (
+  <svg className={cls} viewBox={vb} fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+    {typeof d === 'string' ? <path d={d}/> : d}
+  </svg>
+);
+const ShieldIco  = ({cls}) => <Ico cls={cls} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>;
+const GlobeIco   = ({cls}) => <Ico cls={cls} d={<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>}/>;
+const ServerIco  = ({cls}) => <Ico cls={cls} d={<><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></>}/>;
+const BrainIco   = ({cls}) => <Ico cls={cls} d={<><path d="M9.5 2A2.5 2.5 0 0 0 7 4.5v.25A2.5 2.5 0 0 0 4.5 7 2.5 2.5 0 0 0 2 9.5 2.5 2.5 0 0 0 4.5 12H5"/><path d="M14.5 2A2.5 2.5 0 0 1 17 4.5v.25A2.5 2.5 0 0 1 19.5 7 2.5 2.5 0 0 1 22 9.5 2.5 2.5 0 0 1 19.5 12H19"/><path d="M12 12v9M9 18h6M9 15h6"/><circle cx="12" cy="7" r="2.5"/></>}/>;
+const BoxIco     = ({cls}) => <Ico cls={cls} d={<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>}/>;
+const EyeIco     = ({cls}) => <Ico cls={cls} d={<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>}/>;
+const ArrowIco   = ({cls='w-3.5 h-3.5'}) => <Ico cls={cls} d="M5 12h14M12 5l7 7-7 7"/>;
+
+/* ── Navbar ─────────────────────────────────────── */
+const Nav = () => {
+  const [solid, setSolid] = useState(false);
+  useEffect(() => {
+    const h = () => setSolid(window.scrollY > 50);
+    window.addEventListener('scroll', h);
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  return (
+    <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${solid ? 'bg-stone-50/96 backdrop-blur-md border-b border-stone-200' : 'bg-transparent'}`}>
+      <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-4 h-4 text-stone-700"><ShieldIco/></div>
+          <span className="text-sm font-semibold tracking-tight text-stone-900">Aegis</span>
+        </div>
+        <div className="hidden md:flex gap-8 text-sm text-stone-500">
+          {[['#how','Architecture'],['#simulator','Simulator'],['#research','Research']].map(([h,l])=>(
+            <a key={h} href={h} className="hover:text-stone-900 transition-colors">{l}</a>
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <a href="#" className="hidden sm:block text-sm text-stone-500 hover:text-stone-900 transition-colors">Sign in</a>
+          <a href="#" className="text-sm font-medium bg-stone-900 text-stone-50 px-4 py-2 rounded-sm hover:bg-stone-700 transition-colors">Deploy to AWS</a>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+/* ── Hero ───────────────────────────────────────── */
+const ArchNode = ({ icon, label, sub }) => (
+  <div className="relative z-10 flex flex-col items-center gap-2">
+    <div className="w-10 h-10 rounded-full bg-stone-50 border border-stone-300 flex items-center justify-center">
+      <div className="w-4 h-4 text-stone-500">{icon}</div>
+    </div>
+    <div className="text-center">
+      <div className="text-xs font-medium text-stone-700">{label}</div>
+      <div className="text-xs text-stone-400">{sub}</div>
+    </div>
+  </div>
+);
+
+const Hero = () => (
+  <section id="hero" className="pt-36 pb-20 max-w-6xl mx-auto px-8">
+    <div className="max-w-2xl fade-up">
+      <div className="text-xs uppercase tracking-widest text-stone-400 mb-7">
+        Autonomous Cloud Firewall · AWS-Native Infrastructure
+      </div>
+      <h1 className="text-6xl md:text-7xl font-medium leading-tight tracking-tight text-stone-900 mb-7">
+        Cloud-native resilience,<br/>
+        <em className="text-stone-500 not-italic" style={{fontStyle:'italic'}}>autonomously managed.</em>
+      </h1>
+      <p className="text-lg text-stone-500 leading-loose font-light mb-10 max-w-lg">
+        Aegis deploys a distributed AI firewall into your existing AWS VPC in under ten minutes. It monitors your network edge, absorbs volumetric floods, and neutralises threats — before your applications notice.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <a href="#" className="inline-flex items-center gap-2 text-sm font-medium bg-stone-900 text-stone-50 px-6 py-3 rounded-sm hover:bg-stone-700 transition-colors">
+          Deploy to AWS <ArrowIco/>
+        </a>
+        <a href="#" className="inline-flex items-center gap-2 text-sm font-medium border border-stone-300 text-stone-700 px-6 py-3 rounded-sm hover:bg-stone-100 transition-colors">
+          Read the Whitepaper
+        </a>
+      </div>
+    </div>
+
+    {/* Minimal arch diagram */}
+    <div className="mt-16 border border-stone-200 bg-white rounded-sm p-7 max-w-2xl">
+      <div className="text-xs text-stone-400 tracking-widest uppercase mb-7">System Architecture — Your AWS VPC</div>
+      <div className="relative flex items-start justify-between">
+        {/* Background line */}
+        <div className="absolute top-5 left-5 right-5 h-px bg-stone-200" style={{zIndex:0}}/>
+        <ArchNode icon={<EyeIco/>}   label="Scout"   sub="EC2 Edge"/>
+        <ArchNode icon={<BoxIco/>}   label="Buffer"  sub="SQS Queue"/>
+        <ArchNode icon={<BrainIco/>} label="AI Core" sub="Isolation Forest"/>
+        <ArchNode icon={<ShieldIco/>}label="NACL"    sub="VPC Firewall"/>
+      </div>
+    </div>
+  </section>
+);
+
+/* ── Stats ──────────────────────────────────────── */
+const Stats = () => (
+  <section className="border-y border-stone-200 bg-white">
+    <div className="max-w-6xl mx-auto px-8 py-11 grid grid-cols-2 md:grid-cols-4">
+      {[
+        {v:'< 1s',    l:'Threat response time'},
+        {v:'Zero',    l:'Human intervention required'},
+        {v:'10 min',  l:'Deployment to production'},
+        {v:'100%',    l:'Autonomous mitigation rate'},
+      ].map((s,i)=>(
+        <div key={i} className={`px-8 py-2 ${i>0?'border-l border-stone-200':''} ${i===0?'pl-0':''}`}>
+          <div className="serif text-3xl font-medium text-stone-900 mb-1">{s.v}</div>
+          <div className="text-sm text-stone-400 leading-snug">{s.l}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
+/* ── How it Works ───────────────────────────────── */
+const HowItWorks = () => {
+  const pillars = [
+    { n:'01', tag:'The Scout', sub:'Amazon EC2 · Edge Sensor',
+      analogy:'Reads the "ID card" — not the luggage.',
+      body:`Our agent deploys to an EC2 instance inside your VPC. It intercepts packet metadata at wire speed — source IP, size, protocol — without ever reading payload content. Lightweight by design. Privacy-compliant by default. Your connect-and-forget edge observer.`,
+      tech:'EC2 · Scapy · Python 3' },
+    { n:'02', tag:'The Shock Absorber', sub:'Amazon SQS · Cloud Buffer',
+      analogy:'An infinitely expanding waiting room.',
+      body:`All metadata flows into a managed SQS queue. At any throughput. Even a million malicious packets per second simply fill the queue — the queue scales horizontally while your application server remains completely decoupled from the chaos at the edge.`,
+      tech:'Amazon SQS · Standard Queue' },
+    { n:'03', tag:'The Detective', sub:'Isolation Forest · AI Model',
+      analogy:'Spots anomalous behaviour — not just known faces.',
+      body:`The AI engine calibrates on your live traffic baseline in 20 seconds. The Isolation Forest model then continuously flags statistically anomalous patterns — detecting novel attack vectors that signature databases have never catalogued.`,
+      tech:'Scikit-Learn · FastAPI · SQLite' },
+    { n:'04', tag:'The Bouncer', sub:'AWS VPC · Network ACL',
+      analogy:'Drops a blast door at the cloud perimeter.',
+      body:`The moment an anomaly is confirmed, one authenticated API call injects a Priority-99 DENY ALL rule into your VPC Network Access Control List. All malicious traffic is isolated at the cloud edge. Sub-second latency. No operator required. Ever.`,
+      tech:'AWS VPC · NACL · boto3' },
+  ];
+  return (
+    <section id="how" className="py-24 max-w-6xl mx-auto px-8">
+      <div className="mb-16">
+        <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">How it works</div>
+        <h2 className="text-4xl md:text-5xl font-medium text-stone-900 leading-tight tracking-tight max-w-lg">
+          Four layers. One autonomous system.
+        </h2>
+      </div>
+      <div className="grid md:grid-cols-2 gap-x-14 gap-y-12">
+        {pillars.map((p,i)=>(
+          <div key={i} className="border-t border-stone-200 pt-7">
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <div className="text-xs text-stone-400 tracking-widest uppercase mb-1">{p.tag}</div>
+                <div className="text-sm text-stone-400">{p.sub}</div>
+              </div>
+              <span className="serif text-5xl font-light text-stone-100 leading-none select-none">{p.n}</span>
+            </div>
+            <p className="text-sm text-stone-500 italic border-l-2 border-stone-200 pl-3 mb-4 leading-relaxed">"{p.analogy}"</p>
+            <p className="text-sm text-stone-600 leading-relaxed mb-5">{p.body}</p>
+            <span className="text-xs text-stone-400 font-mono">{p.tech}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+/* ── Simulator ──────────────────────────────────── */
+const PH = { IDLE:'idle', ATTACK:'attack', DETECTING:'detecting', DEFENDED:'defended' };
+
+const Simulator = () => {
+  const [phase, setPhase]   = useState(PH.IDLE);
+  const [dots,  setDots]    = useState([]);
+  const [buf,   setBuf]     = useState(8);
+
+  const phRef  = useRef(PH.IDLE);
+  const dotId  = useRef(0);
+  const raf    = useRef(null);
+  const ts0    = useRef(null);
+  const bufRef = useRef(8);
+  const spT    = useRef(0);
+  const tos    = useRef([]);
+
+  useEffect(()=>{ phRef.current = phase; },[phase]);
+
+  useEffect(()=>{
+    const loop = ts => {
+      if(!ts0.current){ ts0.current=ts; raf.current=requestAnimationFrame(loop); return; }
+      const dt = Math.min(ts-ts0.current, 50);
+      ts0.current = ts;
+      spT.current += dt;
+
+      const p   = phRef.current;
+      const ms  = p===PH.ATTACK ? 70 : p===PH.DETECTING ? 90 : 720;
+      const red = p===PH.ATTACK || p===PH.DETECTING;
+
+      setDots(prev=>{
+        let nx = [...prev];
+        if(spT.current >= ms){
+          spT.current = 0;
+          nx.push({ id:dotId.current++, x:3, y:20+Math.random()*60,
+            speed: red?22:10, color: red?TC.attack:TC.normal,
+            maxX: red?38:94, opacity:1, bouncing:false, size: red?8:6 });
+        }
+        nx = nx.map(d=>{
+          if(d.bouncing) return{...d, x:d.x-30*dt/1000, opacity:d.opacity-0.04};
+          if(d.x >= d.maxX){ if(d.maxX<=12) return{...d,bouncing:true}; return{...d,opacity:d.opacity-0.055}; }
+          return{...d, x:d.x+d.speed*dt/1000};
+        });
+        return nx.filter(d=>d.opacity>0.02&&d.x>-10&&d.x<104);
+      });
+
+      if(p===PH.ATTACK||p===PH.DETECTING) bufRef.current=Math.min(90,bufRef.current+dt*.044);
+      else if(p===PH.DEFENDED)            bufRef.current=Math.max(4,bufRef.current-dt*.022);
+      else                                bufRef.current=Math.max(8,bufRef.current-dt*.006);
+      setBuf(Math.round(bufRef.current));
+
+      raf.current = requestAnimationFrame(loop);
+    };
+    raf.current = requestAnimationFrame(loop);
+    return ()=>{ cancelAnimationFrame(raf.current); ts0.current=null; };
+  },[]);
+
+  const simulate = () => {
+    if(phase!==PH.IDLE&&phase!==PH.DEFENDED) return;
+    tos.current.forEach(clearTimeout); tos.current=[];
+    setPhase(PH.ATTACK);
+    tos.current.push(setTimeout(()=>setPhase(PH.DETECTING),3200));
+    tos.current.push(setTimeout(()=>setPhase(PH.DEFENDED), 5800));
+  };
+
+  const reset = () => {
+    tos.current.forEach(clearTimeout);
+    setPhase(PH.IDLE); setDots([]);
+    bufRef.current=8; setBuf(8);
+  };
+
+  const isAtk = phase===PH.ATTACK||phase===PH.DETECTING;
+  const isDef = phase===PH.DEFENDED;
+
+  const statusMap = {
+    [PH.IDLE]     :{ dot:'#a8a29e', title:'All systems nominal.',          sub:'No anomalies detected in the current observation window.'                                  },
+    [PH.ATTACK]   :{ dot:TC.attack, title:'Volumetric anomaly detected.',   sub:'SQS buffer absorbing the flood. AI engine initialising pattern analysis.'                 },
+    [PH.DETECTING]:{ dot:TC.amber,  title:'Isolation Forest model analysing.', sub:'Anomalous traffic distribution confirmed. Preparing mitigation sequence.'              },
+    [PH.DEFENDED] :{ dot:TC.sage,   title:'Mitigation active.',             sub:'VPC NACL Rule 99 injected. All anomalous traffic isolated at the perimeter.'              },
+  };
+  const sc = statusMap[phase];
+
+  const bufFill   = isAtk ? TC.attack+'2a' : isDef ? TC.amber+'22' : '#e7e5e422';
+  const aiCol     = phase===PH.DETECTING ? TC.amber : isDef ? TC.sage : '#a8a29e';
+  const netBorder = isDef ? TC.sage : isAtk ? '#d6d3d1' : '#d6d3d1';
+  const srvBorder = isDef ? TC.sage : isAtk ? TC.amber  : '#d6d3d1';
+  const aiLabel   = phase===PH.DETECTING ? 'Analysing' : isDef ? 'Mitigated' : 'Monitoring';
+  const srvLabel  = isDef ? 'Shielded' : isAtk ? 'Buffered' : 'Online';
+
+  return (
+    <section id="simulator" className="bg-white border-y border-stone-200 py-24">
+      <div className="max-w-6xl mx-auto px-8">
+        <div className="mb-12">
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Interactive Demonstration</div>
+          <h2 className="text-4xl md:text-5xl font-medium text-stone-900 leading-tight tracking-tight mb-4 max-w-xl">
+            Watch the system respond.
+          </h2>
+          <p className="text-stone-500 text-base leading-relaxed max-w-xl">
+            Initiate a simulated volumetric DDoS attack. Observe how Aegis absorbs, detects, and neutralises the threat — with no operator input.
+          </p>
+        </div>
+
+        {/* Status indicator */}
+        <div className="flex items-start gap-3 pb-7 mb-7 border-b border-stone-200">
+          <span className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 transition-colors duration-500" style={{background:sc.dot, animation: phase!==PH.IDLE?'subtlePulse 1.4s infinite':undefined}}/>
+          <div>
+            <div className="font-medium text-sm transition-colors duration-500" style={{color:sc.dot==='#a8a29e'?'#57534e':sc.dot}}>
+              {sc.title}
+            </div>
+            <div className="text-stone-400 text-sm mt-0.5">{sc.sub}</div>
+          </div>
+        </div>
+
+        {/* Pipeline */}
+        <div className="bg-stone-50 border border-stone-200 rounded-sm p-8 mb-7 relative overflow-hidden" style={{minHeight:'180px'}}>
+          {/* Dot layer */}
+          <div className="absolute inset-0 pointer-events-none" style={{zIndex:20}}>
+            {dots.map(d=>(
+              <div key={d.id} className="pipe-dot" style={{
+                left:`${d.x}%`, top:`${d.y}%`,
+                width:`${d.size}px`, height:`${d.size}px`,
+                background:d.color, opacity:d.opacity,
+              }}/>
+            ))}
+          </div>
+
+          {/* Horizontal spine */}
+          <div className="absolute top-1/2 left-10 right-10 h-px bg-stone-200 pointer-events-none" style={{zIndex:1, transform:'translateY(-50%)'}}/>
+
+          {/* Nodes */}
+          <div className="relative flex items-center justify-between" style={{height:'130px',zIndex:30}}>
+
+            {/* Internet / Shield */}
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="w-14 h-14 rounded-full bg-white border flex items-center justify-center transition-all duration-500"
+                style={{borderColor:isDef?TC.sage:'#d6d3d1'}}>
+                <div className="w-6 h-6 transition-colors duration-500" style={{color:isDef?TC.sage:'#a8a29e'}}>
+                  {isDef ? <ShieldIco/> : <GlobeIco/>}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs font-medium text-stone-500">Internet</div>
+                {isDef && <div className="text-xs font-medium mt-0.5" style={{color:TC.sage}}>NACL Active</div>}
+              </div>
+            </div>
+
+            <div className="text-stone-300 text-lg select-none">›</div>
+
+            {/* Buffer */}
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="relative w-14 rounded-sm bg-white border overflow-hidden flex items-center justify-center transition-all duration-500"
+                style={{height:'56px', borderColor:isAtk?TC.attack:isDef?TC.amber:'#d6d3d1'}}>
+                <div className="absolute bottom-0 inset-x-0 transition-all duration-300 ease-out" style={{height:`${buf}%`, background:bufFill}}/>
+                <div className="w-5 h-5 relative z-10 transition-colors duration-500" style={{color:isAtk?TC.attack:isDef?TC.amber:'#a8a29e'}}>
+                  <BoxIco/>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs font-medium text-stone-500">SQS Buffer</div>
+                <div className="text-xs font-mono mt-0.5 transition-colors duration-500" style={{color:isAtk?TC.attack:isDef?TC.amber:'#a8a29e'}}>{buf}%</div>
+              </div>
+            </div>
+
+            <div className="text-stone-300 text-lg select-none">›</div>
+
+            {/* AI */}
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="w-14 h-14 rounded-full bg-white border flex items-center justify-center transition-all duration-500"
+                style={{borderColor:aiCol==='#a8a29e'?'#d6d3d1':aiCol}}>
+                <div className="w-6 h-6 transition-colors duration-500" style={{color:aiCol}}><BrainIco/></div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs font-medium text-stone-500">AI Engine</div>
+                <div className="text-xs font-medium mt-0.5 transition-colors duration-500" style={{color:aiCol}}>{aiLabel}</div>
+              </div>
+            </div>
+
+            <div className="text-stone-300 text-lg select-none">›</div>
+
+            {/* Server */}
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="w-14 h-14 rounded-sm bg-white border flex items-center justify-center transition-all duration-500"
+                style={{borderColor:srvBorder}}>
+                <div className="w-6 h-6 transition-colors duration-500" style={{color:isDef?TC.sage:isAtk?TC.amber:'#a8a29e'}}>
+                  <ServerIco/>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs font-medium text-stone-500">Application</div>
+                <div className="text-xs font-medium mt-0.5 transition-colors duration-500" style={{color:isDef?TC.sage:isAtk?TC.amber:'#a8a29e'}}>{srvLabel}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Legend + controls */}
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-5 text-xs text-stone-400">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{background:TC.normal}}/>Legitimate traffic
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{background:TC.attack}}/>Anomalous packets
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            {phase!==PH.IDLE && (
+              <button onClick={reset} className="text-sm text-stone-400 hover:text-stone-700 transition-colors underline underline-offset-2">
+                Reset
+              </button>
+            )}
+            <button onClick={simulate} disabled={isAtk}
+              className={`text-sm font-medium px-5 py-2.5 rounded-sm border transition-colors ${
+                isAtk ? 'border-stone-200 text-stone-300 cursor-not-allowed bg-stone-50' :
+                         'border-stone-300 text-stone-700 hover:bg-stone-100'}`}>
+              {isAtk ? 'Simulation running…' : 'Simulate volumetric attack'}
+            </button>
+          </div>
+        </div>
+
+        {/* Step narrative */}
+        {phase!==PH.IDLE && (
+          <div className="mt-10 pt-8 border-t border-stone-200 grid sm:grid-cols-3 gap-8">
+            {[
+              { n:'1', label:'Scout detected',   body:'Edge sensor flagged abnormal packet distribution at the network perimeter.',          done:true                          },
+              { n:'2', label:'Buffer absorbed',   body:'SQS queue expanded to decouple the flood from the application layer.',               done:phase===PH.DETECTING||isDef, active:phase===PH.ATTACK    },
+              { n:'3', label:'AI mitigated',      body:'Isolation Forest confirmed anomaly. NACL Rule 99 injected. Perimeter sealed.',        done:isDef,                        active:phase===PH.DETECTING },
+            ].map((s,i)=>(
+              <div key={i} className={`transition-all duration-500 ${!s.done&&!s.active?'opacity-25':''}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-xs font-semibold ${s.done?'text-stone-900':s.active?'text-stone-600':'text-stone-400'}`}>
+                    {s.done?`✓ ${s.label}`:`${s.n}. ${s.label}`}
+                  </span>
+                </div>
+                <div className="text-xs text-stone-400 leading-relaxed">{s.body}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
+
+/* ── Research ───────────────────────────────────── */
+const Research = () => (
+  <section id="research" className="py-24 max-w-6xl mx-auto px-8">
+    <div className="grid md:grid-cols-3 gap-12">
+      <div>
+        <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Research</div>
+        <h2 className="text-3xl font-medium text-stone-900 leading-tight mb-5">Built on rigorous foundations.</h2>
+        <p className="text-sm text-stone-500 leading-relaxed">
+          Aegis is grounded in peer-reviewed anomaly detection research. Our Isolation Forest implementation for network traffic is detailed in our technical whitepaper and open-sourced on GitHub.
+        </p>
+      </div>
+      <div className="md:col-span-2 flex flex-col gap-0">
+        {[
+          { tag:'Architecture',  t:'Isolation Forest-Based Anomaly Detection for Distributed Cloud Firewalls',                       sub:'Technical Whitepaper · 2026' },
+          { tag:'Engineering',   t:'Autonomous VPC Mitigation via Network ACL Injection: A Practical Implementation Guide',          sub:'Engineering Deep-Dive · 2026' },
+          { tag:'System Design', t:'SQS-Buffered Edge Telemetry: Decoupling Observation Latency from Decision Latency',             sub:'System Design · 2026' },
+        ].map((r,i)=>(
+          <div key={i} className="flex items-start justify-between gap-4 border-t border-stone-200 py-6">
+            <div>
+              <div className="text-xs text-stone-400 font-mono mb-2">{r.tag}</div>
+              <div className="serif text-base font-medium text-stone-800 leading-snug mb-1">{r.t}</div>
+              <div className="text-xs text-stone-400">{r.sub}</div>
+            </div>
+            <a href="#" className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900 transition-colors flex-shrink-0 mt-1 whitespace-nowrap">
+              Read <ArrowIco/>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ── CTA ────────────────────────────────────────── */
+const CTA = () => (
+  <section className="bg-stone-900 py-24 px-8">
+    <div className="max-w-4xl mx-auto text-center">
+      <div className="text-xs uppercase tracking-widest text-stone-600 mb-6">Get started</div>
+      <h2 className="text-4xl md:text-5xl font-medium text-stone-50 leading-tight tracking-tight mb-5">
+        Ready to make your infrastructure<br/>
+        <em className="text-stone-400">self-defending?</em>
+      </h2>
+      <p className="text-stone-400 text-base leading-relaxed mb-10 max-w-xl mx-auto">
+        Connect your AWS account. Aegis provisions the edge sensor, configures the SQS buffer, and arms the AI engine — automatically, in under ten minutes.
+      </p>
+      <div className="flex flex-wrap gap-3 justify-center">
+        <a href="#" className="inline-flex items-center gap-2 text-sm font-medium bg-stone-50 text-stone-900 px-7 py-3.5 rounded-sm hover:bg-white transition-colors">
+          Deploy to AWS <ArrowIco/>
+        </a>
+        <a href="#" className="text-sm font-medium border border-stone-700 text-stone-300 px-7 py-3.5 rounded-sm hover:bg-stone-800 transition-colors">
+          Read the Whitepaper
+        </a>
+      </div>
+    </div>
+  </section>
+);
+
+/* ── Footer ─────────────────────────────────────── */
+const Footer = () => (
+  <footer className="border-t border-stone-200 py-12 px-8 bg-stone-50">
+    <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-10">
+      <div className="max-w-xs">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-4 h-4 text-stone-700"><ShieldIco/></div>
+          <span className="text-sm font-semibold text-stone-900">Aegis</span>
+        </div>
+        <p className="text-xs text-stone-400 leading-relaxed mb-2">
+          Autonomous Network Anomaly Detection and Self-Healing Firewall System.<br/>
+          CSE 5th Semester · Cloud Computing & AI Security · {new Date().getFullYear()}
+        </p>
+        <p className="text-xs text-stone-400 font-mono">github.com/YelloMush/Autonomous_Firewall</p>
+      </div>
+      <div className="flex gap-14 text-sm">
+        <div>
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-3">Product</div>
+          {['Deploy to AWS','Documentation','Whitepaper','Changelog'].map(l=>(
+            <a key={l} href="#" className="block text-sm text-stone-500 hover:text-stone-900 transition-colors mb-2">{l}</a>
+          ))}
+        </div>
+        <div>
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-3">Stack</div>
+          {['Amazon EC2','Amazon SQS','VPC NACL','IsolationForest','FastAPI'].map(l=>(
+            <span key={l} className="block text-xs text-stone-400 font-mono mb-2">{l}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </footer>
+);
+
+/* ── App ────────────────────────────────────────── */
+const App = () => (
+  <div className="bg-stone-50">
+    <Nav/>
+    <Hero/>
+    <Stats/>
+    <HowItWorks/>
+    <Simulator/>
+    <Research/>
+    <CTA/>
+    <Footer/>
+  </div>
+);
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
