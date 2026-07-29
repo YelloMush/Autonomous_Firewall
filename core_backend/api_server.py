@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import sqlite3
 import time
@@ -10,6 +12,37 @@ import os
 from analytics_engine import AnalyticsEngine
 
 app = FastAPI(title="Aegis AI Core API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        try:
+            self.active_connections.remove(websocket)
+        except ValueError:
+            pass
+
+    async def broadcast(self, message: dict):
+        for connection in self.active_connections.copy():
+            try:
+                await connection.send_json(message)
+            except Exception:
+                pass
+
+manager = ConnectionManager()
 
 # ─────────────────────────────────────────────
 # AI Engine  (10-second sliding window)
@@ -222,12 +255,25 @@ async def anomaly_detection_loop():
     baseline_data = []
     calibration_time = 20
 
-    for _ in range(calibration_time):
+    for i in range(calibration_time):
         await asyncio.sleep(ai_engine.slide_step)
         features = ai_engine.extract_features(time.time())
         if features and features["packet_count"] > 0:
             baseline_data.append(features)
             print(f"[*] Calibrating… {len(baseline_data)}/{calibration_time} points captured.")
+            
+        # Broadcast calibration progress to Web UI
+        await manager.broadcast({
+            "type": "metrics",
+            "time": time.time(),
+            "packet_count": features["packet_count"] if features else 0,
+            "total_bytes": features["total_bytes"] if features else 0,
+            "entropy": features["entropy"] if features else 0.0,
+            "threshold": 0,
+            "circuit_breaker_active": False
+        })
+        if i % 2 == 0:
+            await manager.broadcast({"type": "alert", "message": f"Calibrating AI Model... {i+1}/{calibration_time}s"})
 
     # ── Synthetic baseline ──────────────────────────────────────────────────
     # We need DIVERSE synthetic points so IsolationForest can learn what
@@ -268,9 +314,24 @@ async def anomaly_detection_loop():
         features = ai_engine.extract_features(current_time)
 
         if not features:
-            continue
+            features = {
+                "packet_count": 0,
+                "total_bytes": 0,
+                "entropy": 0.0
+            }
 
         pkt = features["packet_count"]
+
+        # Broadcast live telemetry to web dashboard
+        await manager.broadcast({
+            "type": "metrics",
+            "time": current_time,
+            "packet_count": pkt,
+            "total_bytes": features["total_bytes"],
+            "entropy": features["entropy"],
+            "threshold": threshold,
+            "circuit_breaker_active": circuit_breaker_active
+        })
 
         # Only log when something notable happens (reduces terminal noise)
         if pkt > threshold:
@@ -300,9 +361,10 @@ async def anomaly_detection_loop():
             if prediction == -1:
                 print(f"\n[{time.strftime('%H:%M:%S')}] 🛑 AI DETECTED ANOMALOUS VOLUMETRIC SPIKE.")
                 print(f"      Metrics: {pkt} packets | {features['total_bytes']} bytes")
+                circuit_breaker_active = True
+                await manager.broadcast({"type": "alert", "message": "VPC NACL Lockdown Engaged!"})
                 loop = asyncio.get_event_loop()
                 await loop.run_in_executor(None, trigger_cloud_circuit_breaker, current_time)
-                circuit_breaker_active = True
                 await asyncio.sleep(10)
             else:
                 print(f"[AI] Model: traffic flagged as NORMAL — continuing surveillance.")
@@ -312,8 +374,17 @@ async def anomaly_detection_loop():
                 print(f"[AI] ✅ Normal → {pkt} pkts | {features['total_bytes']} bytes")
 
 # ─────────────────────────────────────────────
-# REST Endpoints
+# REST & WebSocket Endpoints
 # ─────────────────────────────────────────────
+@app.websocket("/ws/live")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
 @app.get("/system_status")
 def get_system_status():
     try:
@@ -347,6 +418,10 @@ async def local_ingest(packet: dict):
     )
     ai_engine.add_packet(packet)
     return {"status": "ingested"}
+
+# Serve the Web UI (must be at the bottom so API routes match first)
+DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "..", "web_dashboard")
+app.mount("/", StaticFiles(directory=DASHBOARD_DIR, html=True), name="static")
 
 # ─────────────────────────────────────────────
 # Entry point

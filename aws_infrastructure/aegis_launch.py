@@ -21,6 +21,7 @@ import subprocess
 import os
 import sys
 import time
+import webbrowser
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
@@ -236,32 +237,28 @@ def main():
     # Step 6 — Open local service windows
     banner("Launching local services…")
 
-    print("[*] Opening AI Core (api_server.py)…")
-    open_new_terminal("Aegis AI Core",     f'python "{API_SERVER}"')
-    time.sleep(2)
+    print("[*] Opening AI Core (api_server.py) in a new terminal…")
+    open_new_terminal("Aegis AI Core", f'python "{API_SERVER}"')
+    time.sleep(3)
 
-    print("[*] Opening Live DB Monitor…")
-    open_new_terminal("Aegis Live Monitor", f'python "{MONITOR}"')
-    time.sleep(1)
-
-    print("[*] Opening Attack Dashboard…")
-    open_new_terminal("Aegis Attack Dashboard", f'python "{DASHBOARD}"')
-
+    print("[*] Opening V3 Web Dashboard in your browser…")
+    webbrowser.open("http://127.0.0.1:8000/")
 
     print("\n" + "="*55)
     print("  ✅  ALL SYSTEMS LAUNCHED!")
     print()
     print("  Terminals opened:")
-    print("    🧠  Aegis AI Core       (api_server.py)")
-    print("    📊  Aegis Live Monitor  (live_db_monitor.py)")
-    print("    ⚔️   Aegis Dashboard     (simulate_attack.py)")
+    print("    🧠  Aegis AI Core (api_server.py)")
+    print()
+    print("  Web Dashboard opened:")
+    print("    🌐  http://127.0.0.1:8000/")
     print()
     print("  Edge sensor running on EC2 in tmux session 'aegis'")
     print(f"  To watch it: ssh -i aws_infrastructure\\aegis_edge_key.pem ec2-user@{sensor_ip}")
     print(f"  Then run:    tmux attach -t aegis")
     print()
-    print("  Wait ~20 seconds for AI calibration, then hit the")
-    print("  RED BUTTON in the dashboard to trigger the circuit breaker!")
+    print("  Wait ~20 seconds for AI calibration on the Web Dashboard,")
+    print("  then click LAUNCH VOLUMETRIC ATTACK to trigger the circuit breaker!")
     print("="*55 + "\n")
 
 if __name__ == "__main__":

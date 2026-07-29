@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis | Autonomous AI Firewall</title>
+    <link rel="stylesheet" href="index.css">
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for smooth data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Background Ambient Glows -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <nav class="navbar">
+        <div class="brand">
+            <div class="logo-shield">🛡️</div>
+            <h1>Project Aegis <span>V3</span></h1>
+        </div>
+        <div class="status-badge safe" id="systemStatusBadge">
+            <span class="pulse-dot"></span> System Secure
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <!-- Left Column: Metrics & Controls -->
+        <div class="col-left">
+            
+            <div class="glass-card stat-card">
+                <h3>Live Network Traffic</h3>
+                <div class="stat-value" id="valPacketRate">0 <span class="unit">pkts / 10s</span></div>
+                <div class="stat-subtitle" id="valByteRate">0 bytes</div>
+            </div>
+
+            <div class="glass-card stat-card">
+                <h3>Threat Entropy Score</h3>
+                <div class="stat-value" id="valEntropy">0.00</div>
+                <div class="stat-subtitle">Isolation Forest ML Metric</div>
+            </div>
+
+            <div class="glass-card control-center">
+                <h3>Command Center</h3>
+                <p>Simulate a volumetric DDoS attack to trigger the AI Circuit Breaker.</p>
+                <button class="btn btn-danger" id="btnLaunchAttack" onclick="launchAttack()">
+                    <span class="icon">⚡</span> LAUNCH VOLUMETRIC ATTACK
+                </button>
+                <button class="btn btn-secondary" id="btnReset" onclick="resetSystem()">
+                    <span class="icon">🔄</span> RESET CLOUD NACL
+                </button>
+            </div>
+
+            <div class="glass-card alert-box" id="alertBox">
+                <h3>System Logs</h3>
+                <ul id="logList">
+                    <li>[SYSTEM] AI Core connected. Calibrating...</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Column: Visualizations -->
+        <div class="col-right">
+            <div class="glass-card chart-container">
+                <div class="chart-header">
+                    <h3>Traffic Analysis</h3>
+                    <span class="threshold-label">Threshold: <span id="valThreshold">--</span> pkts</span>
+                </div>
+                <canvas id="trafficChart"></canvas>
+            </div>
+
+            <div class="glass-card radar-container" id="radarContainer">
+                <h3>VPC Subnet Perimeter</h3>
+                <div class="radar-visual">
+                    <div class="radar-ring r1"></div>
+                    <div class="radar-ring r2"></div>
+                    <div class="radar-ring r3"></div>
+                    <div class="radar-scanner"></div>
+                    <div class="server-icon">🖥️</div>
+                    <div class="lock-overlay" id="lockOverlay">🔒 ISOLATED</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

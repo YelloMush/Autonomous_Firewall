@@ -1,8 +1,9 @@
 fastapi
-uvicorn
+uvicorn[standard]
 scapy
 pandas
 scikit-learn
 numpy
 requests
-boto3
+boto3
+websockets
