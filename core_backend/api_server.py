@@ -214,7 +214,7 @@ async def sqs_ingestion_loop():
 def trigger_cloud_circuit_breaker(current_time):
     banner = "!" * 55
     print(f"\n{banner}")
-    print("🚨  INITIATING CLOUD CIRCUIT BREAKER  🚨")
+    print("[!!!]  INITIATING CLOUD CIRCUIT BREAKER  [!!!]")
     print(f"{banner}")
 
     if not NACL_ID:
@@ -340,13 +340,13 @@ async def anomaly_detection_loop():
                 circuit_breaker_active = False
                 continue
 
-            print(f"\n[AI] 🛑 SPIKE DETECTED ({pkt} pkts > threshold {threshold:.1f})")
+            print(f"\n[AI] [SPIKE] DETECTED ({pkt} pkts > threshold {threshold:.1f})")
             print(f"[AI] Bytes: {features['total_bytes']} | Entropy: {features['entropy']:.2f}")
 
             # Hard override: if spike is astronomically above baseline, bypass the model.
             # This handles the case where SQS backlog poisoned the calibration phase.
             if pkt > threshold * HARD_MULTIPLIER:
-                print(f"[AI] ⚡ HARD OVERRIDE: Spike is {pkt/max(threshold,1):.0f}× baseline — "
+                print(f"[AI] [HARD OVERRIDE] Spike is {pkt/max(threshold,1):.0f}x baseline -- "
                       f"forcing anomaly without model inference.")
                 prediction = -1
             else:
@@ -359,7 +359,7 @@ async def anomaly_detection_loop():
                     prediction = -1
 
             if prediction == -1:
-                print(f"\n[{time.strftime('%H:%M:%S')}] 🛑 AI DETECTED ANOMALOUS VOLUMETRIC SPIKE.")
+                print(f"\n[{time.strftime('%H:%M:%S')}] [ALERT] AI DETECTED ANOMALOUS VOLUMETRIC SPIKE.")
                 print(f"      Metrics: {pkt} packets | {features['total_bytes']} bytes")
                 circuit_breaker_active = True
                 await manager.broadcast({"type": "alert", "message": "VPC NACL Lockdown Engaged!"})
@@ -371,7 +371,7 @@ async def anomaly_detection_loop():
         else:
             # Quiet heartbeat — only print every 5 seconds to keep terminal clean
             if int(current_time) % 5 == 0:
-                print(f"[AI] ✅ Normal → {pkt} pkts | {features['total_bytes']} bytes")
+                print(f"[AI] [OK] Normal -- {pkt} pkts | {features['total_bytes']} bytes")
 
 # ─────────────────────────────────────────────
 # REST & WebSocket Endpoints
@@ -380,9 +380,24 @@ async def anomaly_detection_loop():
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
-        while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
+        # Run a keep-alive ping loop AND listen for any incoming messages
+        # concurrently. Works for both read-only and bidirectional clients.
+        async def _keepalive():
+            while True:
+                await asyncio.sleep(20)
+                await websocket.send_json({"type": "ping"})
+
+        ping_task = asyncio.create_task(_keepalive())
+        try:
+            while True:
+                # receive_text raises WebSocketDisconnect on close
+                data = await websocket.receive_text()
+                # optionally echo back or handle client messages here
+        except (WebSocketDisconnect, Exception):
+            pass
+        finally:
+            ping_task.cancel()
+    finally:
         manager.disconnect(websocket)
 
 @app.get("/system_status")

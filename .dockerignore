@@ -1,0 +1,71 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .dockerignore — Aegis AI Core
+# Excludes files that should never be copied into the Docker build context.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Local databases (never bake real data into the image)
+*.db
+*.sqlite
+*.sqlite3
+
+# AWS secrets & SSH keys — CRITICAL: never include in image
+aws_infrastructure/*.pem
+aws_infrastructure/*.key
+aws_infrastructure/aegis_config.txt
+**/*.pem
+**/*.key
+**/*.p12
+
+# Environment files with secrets
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# IDE & OS artifacts
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Test and dev artifacts
+tools_and_tests/
+backup/
+dashboard_simulation/
+database/
+
+# Logs
+*.log
+logs/
+
+# Node (if any frontend tooling)
+node_modules/
+npm-debug.log*
+
+# Misc docs (not needed at runtime)
+*.txt
+readme.md
+todo.md
+CLOUD_IMPLEMENTATION.txt
