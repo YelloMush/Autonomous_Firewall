@@ -48,10 +48,10 @@ function startPythonBackend() {
 // ── Window Factory ───────────────────────────────────────────────────────────
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 900,
-    minWidth: 1100,
-    minHeight: 680,
+    width: 960,
+    height: 650,
+    minWidth: 800,
+    minHeight: 550,
     backgroundColor: '#fafaf9',
     show: false,
     webPreferences: {

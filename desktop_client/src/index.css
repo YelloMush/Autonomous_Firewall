@@ -18,8 +18,6 @@
   --sage:         #6A9479;
   --ember:        #B36A55;
   --amber:        #b45309;
-  --amber-light:  #fef3c7;
-  --blue:         #3b82f6;
 }
 
 .dark {
@@ -32,7 +30,6 @@
   --text-faint:   #78716c;
   --border:       #3d3830;
   --border-mid:   #57534e;
-  --amber-light:  #292000;
 }
 
 @layer base {
@@ -41,207 +38,212 @@
   html, body, #root {
     height: 100%;
     margin: 0;
+    font-size: 12px; /* ← native-app base, everything scales from here */
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background: var(--bg-app);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1.4;
   }
 
   h1, h2, h3, h4 { font-family: 'Playfair Display', Georgia, serif; }
 
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: var(--bg-subtle); }
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
   ::selection { background: var(--bg-hover); }
 }
 
 @layer components {
 
-  /* ── Layout shells ──────────────────────────────────────────────────────── */
-  .app-shell    { background: var(--bg-app); color: var(--text-primary); }
-  .surface      { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 2px; }
-  .surface-sub  { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 2px; }
+  /* ── App shell ──────────────────────────────────────────────────────────── */
+  .app-shell { background: var(--bg-app); color: var(--text-primary); }
+  .surface    { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 2px; }
+  .surface-sub{ background: var(--bg-subtle);  border: 1px solid var(--border); border-radius: 2px; }
 
-  /* ── Top bar & nav ──────────────────────────────────────────────────────── */
+  /* ── Top bar (compact 36px) ─────────────────────────────────────────────── */
   .topbar {
-    height: 44px;
+    height: 36px;
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    padding: 0 16px;
-    gap: 0;
+    padding: 0 10px;
     flex-shrink: 0;
     -webkit-app-region: drag;
     user-select: none;
   }
   .topbar-tab {
     -webkit-app-region: no-drag;
-    display: flex; align-items: center; gap: 6px;
-    padding: 0 14px;
+    display: flex; align-items: center; gap: 5px;
+    padding: 0 11px;
     height: 100%;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--text-muted);
     border-right: 1px solid var(--border);
     cursor: pointer;
-    transition: background 0.12s, color 0.12s;
+    transition: background 0.1s, color 0.1s;
     white-space: nowrap;
   }
-  .topbar-tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .topbar-tab:hover  { background: var(--bg-hover); color: var(--text-primary); }
   .topbar-tab.active {
     background: var(--bg-subtle);
     color: var(--text-primary);
     font-weight: 600;
-    border-bottom: 2px solid var(--sage);
+    box-shadow: inset 0 -2px 0 var(--sage);
   }
 
-  /* ── Status bar (bottom) ────────────────────────────────────────────────── */
+  /* ── Status bar (compact 22px) ──────────────────────────────────────────── */
   .statusbar {
-    height: 28px;
+    height: 22px;
     background: var(--bg-surface);
     border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
-    padding: 0 12px;
-    gap: 16px;
+    padding: 0 8px;
+    gap: 10px;
     flex-shrink: 0;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-faint);
   }
-  .statusbar-sep { width: 1px; height: 12px; background: var(--border); }
+  .statusbar-sep { width: 1px; height: 10px; background: var(--border); }
 
-  /* ── Cards / Panels ─────────────────────────────────────────────────────── */
-  .panel        { @apply surface p-4; }
-  .panel-sm     { @apply surface p-3; }
-  .action-card  {
+  /* ── Cards ──────────────────────────────────────────────────────────────── */
+  .panel     { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 2px; padding: 8px 10px; }
+  .panel-sub { background: var(--bg-subtle);  border: 1px solid var(--border); border-radius: 2px; padding: 6px 8px;  }
+
+  .action-card {
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: 2px;
-    padding: 12px 14px;
+    padding: 8px 10px;
     cursor: pointer;
-    transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+    transition: background 0.1s, border-color 0.1s;
+    text-align: left;
   }
-  .action-card:hover {
-    background: var(--bg-hover);
-    border-color: var(--border-mid);
-  }
+  .action-card:hover  { background: var(--bg-hover); border-color: var(--border-mid); }
   .action-card:active { transform: scale(0.99); }
 
-  /* ── Metric widgets ─────────────────────────────────────────────────────── */
+  /* ── Metric widgets (compact) ───────────────────────────────────────────── */
   .metric-widget {
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: 2px;
-    padding: 12px 14px;
-    display: flex; flex-direction: column; gap: 6px;
+    padding: 7px 9px;
+    display: flex; flex-direction: column; gap: 3px;
   }
-  .metric-label  { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); font-family: 'Inter', sans-serif; }
-  .metric-value  { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 500; line-height: 1; color: var(--text-primary); }
-  .metric-sub    { font-size: 10px; color: var(--text-faint); font-family: 'Inter', sans-serif; }
-  .metric-bar    { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; margin-top: 2px; }
-  .metric-bar-fill { height: 100%; border-radius: 1px; transition: width 0.6s ease; }
+  .metric-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); }
+  .metric-value { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 500; line-height: 1; color: var(--text-primary); }
+  .metric-sub   { font-size: 9px; color: var(--text-faint); line-height: 1.3; }
+  .metric-bar   { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+  .metric-bar-fill { height: 100%; border-radius: 1px; transition: width 0.5s ease; }
 
-  /* ── Terminal ───────────────────────────────────────────────────────────── */
+  /* ── Terminal (dense mono) ──────────────────────────────────────────────── */
   .terminal {
     font-family: 'JetBrains Mono', 'Menlo', monospace;
-    font-size: 11px;
-    line-height: 1.6;
+    font-size: 10px;
+    line-height: 1.45;
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: 2px;
-    padding: 10px 12px;
+    padding: 7px 8px;
     overflow-y: auto;
     white-space: pre-wrap;
     word-break: break-all;
     color: var(--text-primary);
   }
 
-  /* ── Buttons ────────────────────────────────────────────────────────────── */
+  /* ── Buttons (slim) ─────────────────────────────────────────────────────── */
   .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12px; font-weight: 500; font-family: 'Inter', sans-serif;
-    padding: 6px 14px; border-radius: 2px;
-    cursor: pointer; transition: background 0.12s, opacity 0.12s;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif;
+    padding: 4px 10px; border-radius: 2px;
+    cursor: pointer; transition: background 0.1s, opacity 0.1s;
     border: 1px solid transparent;
     white-space: nowrap;
+    line-height: 1.4;
   }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-primary  { background: var(--text-primary); color: var(--bg-surface); }
-  .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+  .btn-primary:hover:not(:disabled) { opacity: 0.82; }
   .btn-outline  { background: transparent; border-color: var(--border-mid); color: var(--text-primary); }
   .btn-outline:hover:not(:disabled) { background: var(--bg-hover); }
-  .btn-sage     { background: var(--sage); color: #fff; border-color: transparent; }
-  .btn-sage:hover:not(:disabled) { opacity: 0.88; }
-  .btn-danger   { background: var(--ember); color: #fff; border-color: transparent; }
-  .btn-danger:hover:not(:disabled) { opacity: 0.88; }
-  .btn-amber    { background: var(--amber); color: #fff; border-color: transparent; }
-  .btn-amber:hover:not(:disabled)  { opacity: 0.88; }
+  .btn-sage     { background: var(--sage);  color: #fff; }
+  .btn-sage:hover:not(:disabled)  { opacity: 0.88; }
+  .btn-danger   { background: var(--ember); color: #fff; }
+  .btn-danger:hover:not(:disabled){ opacity: 0.88; }
+  .btn-amber    { background: var(--amber); color: #fff; }
+  .btn-amber:hover:not(:disabled) { opacity: 0.88; }
 
-  /* ── Form controls ──────────────────────────────────────────────────────── */
+  /* ── Form controls (compact) ────────────────────────────────────────────── */
   .form-input {
     width: 100%;
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: 2px;
-    padding: 6px 10px;
-    font-size: 12px;
+    padding: 4px 7px;
+    font-size: 11px;
     font-family: 'Inter', sans-serif;
     color: var(--text-primary);
     outline: none;
-    transition: border-color 0.12s;
+    transition: border-color 0.1s;
+    line-height: 1.4;
   }
   .form-input:focus { border-color: var(--border-mid); }
-  .form-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: block; }
+  .form-label { font-size: 10px; color: var(--text-muted); margin-bottom: 3px; display: block; }
 
   /* ── Dots / badges ──────────────────────────────────────────────────────── */
-  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
   .dot-blink { animation: blink 1.4s ease-in-out infinite; }
+
   .badge {
-    font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
-    padding: 1px 6px; border-radius: 2px;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.04em;
+    padding: 1px 5px; border-radius: 2px;
     font-family: 'Inter', sans-serif;
   }
-  .badge-sage   { background: rgba(106,148,121,0.15); color: var(--sage); }
-  .badge-ember  { background: rgba(179,106,85,0.15);  color: var(--ember); }
-  .badge-amber  { background: rgba(180,83,9,0.15);    color: var(--amber); }
-  .badge-muted  { background: var(--bg-hover); color: var(--text-muted); }
+  .badge-sage  { background: rgba(106,148,121,0.15); color: var(--sage);  }
+  .badge-ember { background: rgba(179,106,85,0.15);  color: var(--ember); }
+  .badge-amber { background: rgba(180,83,9,0.15);    color: var(--amber); }
+  .badge-muted { background: var(--bg-hover);        color: var(--text-muted); }
+
+  /* ── Section label ──────────────────────────────────────────────────────── */
+  .section-label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-faint); margin-bottom: 5px;
+  }
 
   /* ── Dividers ───────────────────────────────────────────────────────────── */
-  .divider     { height: 1px; background: var(--border); }
-  .divider-v   { width: 1px; background: var(--border); align-self: stretch; }
-
-  /* ── Section headings ───────────────────────────────────────────────────── */
-  .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); font-family: 'Inter', sans-serif; margin-bottom: 8px; }
+  .divider   { height: 1px; background: var(--border); }
+  .divider-v { width: 1px;  background: var(--border); align-self: stretch; }
 
   /* ── Toggle ─────────────────────────────────────────────────────────────── */
   .toggle-track {
-    width: 32px; height: 18px; border-radius: 9px;
+    width: 26px; height: 14px; border-radius: 7px;
     background: var(--border-mid);
     position: relative; cursor: pointer;
-    transition: background 0.2s;
-    flex-shrink: 0;
+    transition: background 0.15s; flex-shrink: 0;
   }
   .toggle-track.on { background: var(--sage); }
   .toggle-thumb {
     position: absolute; top: 2px; left: 2px;
-    width: 14px; height: 14px; border-radius: 50%;
+    width: 10px; height: 10px; border-radius: 50%;
     background: #fff;
-    transition: transform 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.15s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   }
-  .toggle-track.on .toggle-thumb { transform: translateX(14px); }
+  .toggle-track.on .toggle-thumb { transform: translateX(12px); }
 
-  /* ── Drag region ────────────────────────────────────────────────────────── */
-  .drag-region  { -webkit-app-region: drag; }
-  .no-drag      { -webkit-app-region: no-drag; }
+  /* ── App-region helpers ─────────────────────────────────────────────────── */
+  .drag-region { -webkit-app-region: drag; }
+  .no-drag     { -webkit-app-region: no-drag; }
 
   /* ── Animations ─────────────────────────────────────────────────────────── */
-  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.25; } }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
-  .fade-in { animation: fadeIn 0.2s ease-out both; }
+  @keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  @keyframes fadeIn  { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeIn 0.15s ease-out both; }
 
-  /* ── Health gauge SVG circle ────────────────────────────────────────────── */
-  .gauge-ring { transition: stroke-dashoffset 0.8s ease; }
+  /* ── SVG gauge ring ─────────────────────────────────────────────────────── */
+  .gauge-ring { transition: stroke-dashoffset 0.7s ease; }
 }
