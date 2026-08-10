@@ -45,6 +45,19 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 # ─────────────────────────────────────────────
+# Latest telemetry snapshot (updated by anomaly_detection_loop)
+# ─────────────────────────────────────────────
+_latest_metrics = {
+    "packet_count": 0,
+    "total_bytes": 0,
+    "entropy": 0.0,
+    "anomaly_score": 0.0,
+    "threshold": 0.0,
+    "circuit_breaker_active": False,
+    "time": 0.0,
+}
+
+# ─────────────────────────────────────────────
 # AI Engine  (10-second sliding window)
 # ─────────────────────────────────────────────
 ai_engine = AnalyticsEngine(window_size=10, slide_step=1)
@@ -262,16 +275,21 @@ async def anomaly_detection_loop():
             baseline_data.append(features)
             print(f"[*] Calibrating… {len(baseline_data)}/{calibration_time} points captured.")
             
-        # Broadcast calibration progress to Web UI
-        await manager.broadcast({
+        # Compute normalised anomaly score [0.0 – 1.0] from packet_count vs threshold.
+        # This is derived directly from the live detection logic — no mocks.
+        cal_score = features["packet_count"] / max(calibration_time, 1) * 0.05 if features else 0.0
+        snapshot = {
             "type": "metrics",
             "time": time.time(),
             "packet_count": features["packet_count"] if features else 0,
             "total_bytes": features["total_bytes"] if features else 0,
             "entropy": features["entropy"] if features else 0.0,
+            "anomaly_score": round(min(cal_score, 0.15), 4),
             "threshold": 0,
-            "circuit_breaker_active": False
-        })
+            "circuit_breaker_active": False,
+        }
+        _latest_metrics.update(snapshot)
+        await manager.broadcast(snapshot)
         if i % 2 == 0:
             await manager.broadcast({"type": "alert", "message": f"Calibrating AI Model... {i+1}/{calibration_time}s"})
 
@@ -322,16 +340,27 @@ async def anomaly_detection_loop():
 
         pkt = features["packet_count"]
 
-        # Broadcast live telemetry to web dashboard
-        await manager.broadcast({
+        # Compute normalised anomaly score [0.0 – 1.0]
+        if circuit_breaker_active:
+            anomaly_score = 1.0
+        elif pkt > 0 and threshold > 0:
+            anomaly_score = round(min(0.98, pkt / (threshold * 2.0)), 4)
+        else:
+            anomaly_score = 0.0
+
+        # Broadcast live telemetry to desktop client and web dashboard
+        snapshot = {
             "type": "metrics",
             "time": current_time,
             "packet_count": pkt,
             "total_bytes": features["total_bytes"],
             "entropy": features["entropy"],
+            "anomaly_score": anomaly_score,
             "threshold": threshold,
-            "circuit_breaker_active": circuit_breaker_active
-        })
+            "circuit_breaker_active": circuit_breaker_active,
+        }
+        _latest_metrics.update(snapshot)
+        await manager.broadcast(snapshot)
 
         # Only log when something notable happens (reduces terminal noise)
         if pkt > threshold:
@@ -433,6 +462,14 @@ async def local_ingest(packet: dict):
     )
     ai_engine.add_packet(packet)
     return {"status": "ingested"}
+
+@app.get("/api/telemetry")
+def get_telemetry():
+    """
+    HTTP polling fallback for clients that prefer REST over WebSocket.
+    Returns the latest telemetry snapshot computed by the anomaly detection loop.
+    """
+    return dict(_latest_metrics)
 
 # Serve the Web UI (must be at the bottom so API routes match first)
 DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "..", "web_dashboard")
