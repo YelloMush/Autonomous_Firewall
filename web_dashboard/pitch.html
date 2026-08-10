@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aegis — Enterprise-Grade Resilience. Zero Infrastructure Required.</title>
+<title>Aegis — Deploy enterprise AI defense directly into your AWS VPC.</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;}
@@ -133,7 +133,7 @@ const Nav = ({isLoggedIn,onSignIn,onSignOut,onProtect,onDashboard}) => {
         <div className="flex items-center gap-2.5">
           <div className="w-4 h-4 text-stone-700"><ShieldIco/></div>
           <span className="text-sm font-semibold tracking-tight text-stone-900">Aegis</span>
-          <span className="ml-1 text-xs text-stone-400 border border-stone-200 px-2 py-0.5 rounded-full">Model A</span>
+          <span className="ml-1 text-xs text-stone-400 border border-stone-200 px-2 py-0.5 rounded-full">Model B</span>
         </div>
         <div className="hidden md:flex gap-8 text-sm text-stone-500">
           {[['#how','How it works'],['#simulator','Simulator'],['#research','Research']].map(([h,l])=>(
@@ -181,14 +181,14 @@ const Nav = ({isLoggedIn,onSignIn,onSignOut,onProtect,onDashboard}) => {
 const Hero = ({onProtect}) => (
   <section id="hero" className="pt-36 pb-20 max-w-6xl mx-auto px-8">
     <div className="max-w-2xl fade-up">
-      <div className="text-xs uppercase tracking-widest text-stone-400 mb-7">Reverse Proxy Firewall · Model A · DNS-Based Deployment</div>
+      <div className="text-xs uppercase tracking-widest text-stone-400 mb-7">IaC Deployment · Model B · 1-Click AWS VPC</div>
       <h1 className="text-6xl md:text-7xl font-medium leading-tight tracking-tight text-stone-900 mb-7">
-        Enterprise-grade resilience.<br/><em className="text-stone-500">Zero infrastructure required.</em>
+        Deploy enterprise AI defense<br/><em className="text-stone-500">directly into your AWS VPC.</em>
       </h1>
-      <p className="text-lg text-stone-500 leading-loose font-light mb-10 max-w-lg">Update a single DNS record. Aegis routes all traffic through our distributed cloud buffers, evaluates every request with unsupervised machine learning, and delivers only clean traffic to your origin server.</p>
+      <p className="text-lg text-stone-500 leading-loose font-light mb-10 max-w-lg">Grant Aegis a provisioning IAM role. We deploy our entire M/M/c queuing and Isolation Forest architecture inside your own cloud environment — via a single Terraform/CloudFormation template. Your data never leaves your VPC.</p>
       <div className="flex flex-wrap gap-3">
         <button onClick={onProtect} className="inline-flex items-center gap-2 text-sm font-medium bg-stone-900 text-stone-50 px-6 py-3 rounded-sm hover:bg-stone-700 transition-colors">
-          Get protected <ArrowIco/>
+          Deploy to my VPC <ArrowIco/>
         </button>
         <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-sm font-medium border border-stone-300 text-stone-700 px-6 py-3 rounded-sm hover:bg-stone-100 transition-colors">
           <div className="w-4 h-4"><GithubIco/></div>View on GitHub
@@ -196,14 +196,14 @@ const Hero = ({onProtect}) => (
       </div>
     </div>
     <div className="mt-16 border border-stone-200 bg-white rounded-sm p-7 max-w-2xl">
-      <div className="text-xs text-stone-400 tracking-widest uppercase mb-7">Traffic flow — your AWS VPC, shielded</div>
+      <div className="text-xs text-stone-400 tracking-widest uppercase mb-7">Deployment flow — inside your AWS VPC</div>
       <div className="relative flex items-start justify-between">
         <div className="absolute top-5 left-5 right-5 h-px bg-stone-200" style={{zIndex:0}}/>
         {[
-          {icon:<DnsIco/>,label:'DNS Update',sub:'1 record change'},
-          {icon:<BoxIco/>,label:'Aegis Buffer',sub:'SQS absorbs'},
-          {icon:<BrainIco/>,label:'AI Cleanser',sub:'Isolation Forest'},
-          {icon:<ServerIco/>,label:'Your Server',sub:'Clean traffic only'},
+          {icon:<NaclIco/>,label:'IAM Role ARN',sub:'1-time grant'},
+          {icon:<BoxIco/>,label:'SQS Buffers',sub:'Deployed in VPC'},
+          {icon:<BrainIco/>,label:'AI Core',sub:'EC2 + Isolation Forest'},
+          {icon:<ServerIco/>,label:'Your Server',sub:'Local clean pipe'},
         ].map((n,i)=>(
           <div key={i} className="relative z-10 flex flex-col items-center gap-2">
             <div className="w-10 h-10 rounded-full bg-stone-50 border border-stone-300 flex items-center justify-center">
@@ -221,7 +221,7 @@ const Hero = ({onProtect}) => (
 const Stats = () => (
   <section className="border-y border-stone-200 bg-white">
     <div className="max-w-6xl mx-auto px-8 py-11 grid grid-cols-2 md:grid-cols-4">
-      {[{v:'1 Record',l:'DNS change required'},{v:'< 10ms',l:'Added latency overhead'},{v:'99.99%',l:'Platform uptime SLA'},{v:'100%',l:'Origin IP concealment'}].map((s,i)=>(
+      {[{v:'1 Template',l:'Terraform / CloudFormation'},{v:'< 8 min',l:'Full VPC deployment time'},{v:'100%',l:'Data stays in your cloud'},{v:'Zero',l:'Egress to Aegis servers'}].map((s,i)=>(
         <div key={i} className={`px-8 py-2 ${i>0?'border-l border-stone-200':''} ${i===0?'pl-0':''}`}>
           <div className="serif text-3xl font-medium text-stone-900 mb-1">{s.v}</div>
           <div className="text-sm text-stone-400 leading-snug">{s.l}</div>
@@ -234,17 +234,17 @@ const Stats = () => (
 /* ─────────────────── HOW IT WORKS ─────────────────── */
 const HowItWorks = () => {
   const steps = [
-    {n:'01',tag:'DNS Redirection',sub:'Anycast routing · Zero-touch setup',analogy:'The attacker never sees your real address.',body:`Your domain's DNS A record points to the Aegis Anycast network. All traffic flows to our infrastructure first. Your origin server's true IP is completely concealed.`,tech:'Anycast DNS · BGP routing'},
-    {n:'02',tag:'The Multi-Tenant Buffer',sub:'Amazon SQS · Cloud queue',analogy:'An infinitely expanding shock absorber.',body:'All global traffic hits our SQS queue before touching your origin. A million packets per second simply fills the queue — your origin is completely decoupled from the flood.',tech:'Amazon SQS · Horizontal scaling'},
-    {n:'03',tag:'The AI Cleanser',sub:'Isolation Forest · Real-time inference',analogy:'Identifies anomalies without knowing the attack.',body:'Our Isolation Forest model evaluates each request batch in real time. It detects statistically abnormal traffic distributions — novel attack patterns, volumetric floods, zero-days — without signature databases.',tech:'Scikit-Learn · FastAPI · Real-time inference'},
-    {n:'04',tag:'The Clean Pipe',sub:'Reverse proxy · Encrypted tunnel',analogy:'Only clean traffic reaches your door.',body:'Verified, clean requests are forwarded to your origin through a high-bandwidth encrypted tunnel. Your server receives the same steady, predictable load it always has.',tech:'Reverse proxy · TLS tunnel · Origin shield'},
+    {n:'01',tag:'IAM Role Grant',sub:'AWS STS · Zero standing access',analogy:'You hand us the keys — only for the time it takes to build.',body:'You create a cross-account IAM Role with least-privilege permissions and provide its ARN. Aegis assumes this role via AWS STS to provision resources inside your VPC, then immediately releases access. No long-lived credentials are stored.',tech:'AWS IAM · STS AssumeRole · Least-privilege'},
+    {n:'02',tag:'1-Click IaC Deployment',sub:'Terraform / CloudFormation · Automated',analogy:'An entire security stack materialises in your cloud in minutes.',body:'Our Terraform template deploys SQS ingestion queues, EC2 edge sensor nodes, and the AI core into your existing VPC. Everything runs in your own AWS account, in your chosen region — we never see your traffic.',tech:'Terraform · AWS CloudFormation · VPC subnets'},
+    {n:'03',tag:'The In-VPC AI Core',sub:'Isolation Forest · EC2 · Real-time inference',analogy:'Your own guard dog — trained by us, housed by you.',body:'The deployed EC2 fleet runs our pre-trained Isolation Forest model. It evaluates every SQS-buffered request batch in real time, calculating Shannon Entropy to distinguish Flash Crowds from Botnets — without signature databases.',tech:'Scikit-Learn · FastAPI · EC2 · Auto Scaling'},
+    {n:'04',tag:'The Local Clean Pipe',sub:'VPC-internal routing · No external egress',analogy:'Clean traffic never leaves your private network.',body:'Verified requests are forwarded directly to your origin through VPC-internal routing. No traffic touches Aegis servers. NACL rules injected by our Boto3 automation block confirmed malicious IP ranges at the AWS network layer.',tech:'AWS NACL · Boto3 · VPC routing · TLS'},
   ];
   return (
     <section id="how" className="py-24 max-w-6xl mx-auto px-8">
       <div className="mb-16">
         <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">How it works</div>
-        <h2 className="text-4xl md:text-5xl font-medium text-stone-900 leading-tight tracking-tight max-w-lg">The Model A pipeline.</h2>
-        <p className="text-stone-500 text-base leading-relaxed mt-4 max-w-xl">A four-stage reverse proxy architecture that routes, absorbs, cleanses, and delivers.</p>
+        <h2 className="text-4xl md:text-5xl font-medium text-stone-900 leading-tight tracking-tight max-w-lg">The Model B pipeline.</h2>
+        <p className="text-stone-500 text-base leading-relaxed mt-4 max-w-xl">A four-stage IaC deployment that grants, provisions, analyses, and protects — entirely within your AWS account.</p>
       </div>
       <div className="grid md:grid-cols-2 gap-x-14 gap-y-12">
         {steps.map((p,i)=>(
@@ -302,9 +302,9 @@ const Simulator = () => {
     <section id="simulator" className="bg-white border-y border-stone-200 py-24">
       <div className="max-w-6xl mx-auto px-8">
         <div className="mb-12">
-          <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Model A — Interactive Demonstration</div>
-          <h2 className="text-4xl md:text-5xl font-medium text-stone-900 leading-tight tracking-tight mb-4 max-w-xl">Your server never feels the storm.</h2>
-          <p className="text-stone-500 text-base leading-relaxed max-w-xl">Simulate a volumetric attack. Watch Aegis absorb and neutralise the flood while clean traffic reaches your origin — completely uninterrupted.</p>
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Model B — VPC-Internal Demonstration</div>
+          <h2 className="text-4xl md:text-5xl font-medium text-stone-900 leading-tight tracking-tight mb-4 max-w-xl">Your VPC never feels the storm.</h2>
+          <p className="text-stone-500 text-base leading-relaxed max-w-xl">Simulate a volumetric attack against your in-VPC Aegis stack. Watch the SQS buffer absorb and the AI core neutralise the flood — while your origin server remains completely uninterrupted, all inside your AWS account.</p>
         </div>
         <div className="relative rounded-sm overflow-hidden mb-3" style={{height:'230px',border:'1px solid #e7e5e4'}}>
           <div className="absolute inset-0 flex pointer-events-none">
@@ -387,14 +387,14 @@ const Research = () => (
 const CTA = ({onProtect}) => (
   <section className="bg-stone-900 py-24 px-8">
     <div className="max-w-4xl mx-auto text-center">
-      <div className="text-xs uppercase tracking-widest text-stone-600 mb-6">One DNS record away</div>
+      <div className="text-xs uppercase tracking-widest text-stone-600 mb-6">One IAM role away</div>
       <h2 className="text-4xl md:text-5xl font-medium text-stone-50 leading-tight tracking-tight mb-5">
-        Point your DNS at Aegis.<br/><em className="text-stone-400">We handle everything else.</em>
+        Deploy Aegis into your VPC.<br/><em className="text-stone-400">We provision everything else.</em>
       </h2>
-      <p className="text-stone-400 text-base leading-relaxed mb-10 max-w-xl mx-auto">No infrastructure changes. No code modifications. Aegis is operational within minutes of a single DNS update.</p>
+      <p className="text-stone-400 text-base leading-relaxed mb-10 max-w-xl mx-auto">No DNS changes. No traffic egress. Provide an IAM Role ARN and our Terraform template deploys your entire AI defense stack in under 8 minutes.</p>
       <div className="flex flex-wrap gap-3 justify-center">
         <button onClick={onProtect} className="inline-flex items-center gap-2 text-sm font-medium bg-stone-50 text-stone-900 px-7 py-3.5 rounded-sm hover:bg-white transition-colors">
-          Get protected now <ArrowIco/>
+          Deploy to my VPC <ArrowIco/>
         </button>
         <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-sm font-medium border border-stone-700 text-stone-300 px-7 py-3.5 rounded-sm hover:bg-stone-800 transition-colors">
           <div className="w-4 h-4"><GithubIco/></div>View on GitHub
@@ -412,21 +412,21 @@ const Footer = ({onSignIn,onProtect}) => (
         <div className="flex items-center gap-2 mb-3">
           <div className="w-4 h-4 text-stone-700"><ShieldIco/></div>
           <span className="text-sm font-semibold text-stone-900">Aegis</span>
-          <span className="text-xs text-stone-400 border border-stone-200 px-1.5 py-0.5 rounded-full ml-1">Model A</span>
+          <span className="text-xs text-stone-400 border border-stone-200 px-1.5 py-0.5 rounded-full ml-1">Model B</span>
         </div>
-        <p className="text-xs text-stone-400 leading-relaxed mb-2">Reverse Proxy Firewall — Autonomous Anomaly Detection.<br/>CSE 5th Semester · Cloud Computing & AI Security · {new Date().getFullYear()}</p>
+        <p className="text-xs text-stone-400 leading-relaxed mb-2">IaC Deployment — AI Defense inside your AWS VPC.<br/>CSE 5th Semester · Cloud Computing & AI Security · {new Date().getFullYear()}</p>
         <p className="text-xs text-stone-400 font-mono">github.com/YelloMush/Autonomous_Firewall</p>
       </div>
       <div className="flex gap-14">
         <div>
           <div className="text-xs uppercase tracking-widest text-stone-400 mb-3">Product</div>
-          <button onClick={onProtect} className="block text-sm text-stone-500 hover:text-stone-900 transition-colors mb-2 text-left">Get Protected</button>
+          <button onClick={onProtect} className="block text-sm text-stone-500 hover:text-stone-900 transition-colors mb-2 text-left">Deploy to VPC</button>
           <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="block text-sm text-stone-500 hover:text-stone-900 transition-colors mb-2">GitHub</a>
           <button onClick={onSignIn} className="block text-sm text-stone-500 hover:text-stone-900 transition-colors mb-2 text-left">Sign In</button>
         </div>
         <div>
           <div className="text-xs uppercase tracking-widest text-stone-400 mb-3">Stack</div>
-          {['Anycast DNS','Amazon SQS','IsolationForest','Reverse Proxy','FastAPI'].map(l=>(
+          {['Terraform / CFn','Amazon SQS','IsolationForest','AWS EC2','Boto3 NACL'].map(l=>(
             <span key={l} className="block text-xs text-stone-400 font-mono mb-2">{l}</span>
           ))}
         </div>
@@ -436,88 +436,76 @@ const Footer = ({onSignIn,onProtect}) => (
 );
 
 /* ═══════════════════════════════════════════════════════════
-   ONBOARDING — wired to tenant_api.py (port 8001)
-   Auto-transitions to Dashboard 2.5s after DNS verification
+   ONBOARDING (Model B) — Cloud Auth → IaC Provisioning → Success
+   Auto-transitions to Dashboard 2.5s after deployment completes
    ═══════════════════════════════════════════════════════════ */
-const STEP_LABELS = ['Domain Verification','DNS Configuration','Deployment'];
+const STEP_LABELS = ['Cloud Authentication','Infrastructure Provisioning','Deployment'];
 
 const Onboarding = ({onBack, onSuccess}) => {
   const [step,        setStep]        = useState(1);
-  const [domain,      setDomain]      = useState('');
+  const [arnValue,    setArnValue]    = useState('');
   const [verifying,   setVerifying]   = useState(false);
   const [apiError,    setApiError]    = useState('');
   const [tenantData,  setTenantData]  = useState(null);
-  const [propagating, setPropagating] = useState(false);
+  const [provItems,   setProvItems]   = useState([]);
   const [success,     setSuccess]     = useState(false);
-  const [copied,      setCopied]      = useState(false);
   const [redirecting, setRedirecting] = useState(false);
-  const pollRef = useRef(null);
-
-  /* Cleanup */
-  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   /* Auto-redirect to Dashboard after success */
   useEffect(() => {
     if (!success || !onSuccess) return;
     setRedirecting(true);
-    const t = setTimeout(() => onSuccess(tenantData), 2500);
+    const t = setTimeout(() => onSuccess(tenantData || {domain_name: arnValue, tenant_id: 'vpc-'+Math.random().toString(36).slice(2,10), ingress_ip: '10.0.1.'+Math.floor(Math.random()*254+1)}), 2500);
     return () => clearTimeout(t);
   }, [success]);
 
-  /* DNS polling */
-  useEffect(() => {
-    if (step !== 3 || !tenantData) return;
-    setPropagating(true);
-    const checkDns = async () => {
-      try {
-        const res  = await fetch(`${API_BASE}/api/check-dns/${tenantData.tenant_id}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.status === 'verified') {
-          clearInterval(pollRef.current); pollRef.current = null;
-          setPropagating(false); setSuccess(true);
-        }
-      } catch (_) {}
-    };
-    checkDns();
-    pollRef.current = setInterval(checkDns, 3000);
-    return () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } };
-  }, [step, tenantData?.tenant_id]);
+  /* IaC Provisioning Simulation */
+  const PROV_STEPS = [
+    {id:1, label:'Assuming IAM Role via STS…',          delay:0},
+    {id:2, label:'Deploying SQS Ingestion Buffers…',    delay:1100},
+    {id:3, label:'Initialising EC2 Edge Sensors…',      delay:2400},
+    {id:4, label:'Booting AI Core (Isolation Forest)…', delay:3800},
+    {id:5, label:'Configuring VPC NACL Rules…',         delay:5000},
+    {id:6, label:'Running health checks…',              delay:6200},
+  ];
 
-  /* Step 1 submit */
-  const handleVerify = async (e) => {
+  const runProvisioning = () => {
+    setStep(2);
+    setProvItems([]);
+    PROV_STEPS.forEach(ps => {
+      setTimeout(() => {
+        setProvItems(prev => [...prev, {id:ps.id, label:ps.label, done:false}]);
+        setTimeout(() => {
+          setProvItems(prev => prev.map(p => p.id===ps.id ? {...p,done:true} : p));
+          if (ps.id === PROV_STEPS.length) {
+            setTimeout(() => { setStep(3); setSuccess(false); setSuccess(true); }, 600);
+          }
+        }, 900);
+      }, ps.delay);
+    });
+  };
+
+  /* Step 1 submit — validate ARN format, then kick off provisioning */
+  const handleArnSubmit = (e) => {
     e.preventDefault();
-    if (!domain.trim()) return;
-    setVerifying(true); setApiError('');
-    try {
-      const res = await fetch(`${API_BASE}/api/provision-tenant`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({domain_name: domain.trim()}),
-      });
-      if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.detail||`Server error (${res.status})`); }
-      const data = await res.json();
-      setTenantData(data); setStep(2);
-    } catch (e) {
-      setApiError(e.message.toLowerCase().includes('fetch')||e.message.includes('Failed')
-        ? 'Cannot reach the Aegis API. Is tenant_api.py running on port 8001?'
-        : e.message);
-    } finally { setVerifying(false); }
+    const arn = arnValue.trim();
+    if (!arn) return;
+    const arnRe = /^arn:aws:iam::\d{12}:role\/[\w+=,.@/-]+$/;
+    if (!arnRe.test(arn)) {
+      setApiError('Invalid ARN format. Expected: arn:aws:iam::123456789012:role/AegisProvisionRole');
+      return;
+    }
+    setApiError('');
+    setVerifying(true);
+    // Simulate STS assumption check
+    setTimeout(() => {
+      setVerifying(false);
+      setTenantData({domain_name: arn, tenant_id: 'vpc-'+Math.random().toString(36).slice(2,10), ingress_ip: '10.0.'+Math.floor(Math.random()*4+1)+'.'+Math.floor(Math.random()*254+1)});
+      runProvisioning();
+    }, 1400);
   };
 
-  const handleDnsConfirm = () => {
-    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-    setPropagating(false); setSuccess(false); setStep(3);
-  };
-
-  const copy = () => {
-    navigator.clipboard.writeText(tenantData?.cname_target||'ingress.aegis-shield.net')
-      .then(()=>{ setCopied(true); setTimeout(()=>setCopied(false),2000); });
-  };
-
-  const cleanDomain = domain.replace(/^https?:\/\//,'').replace(/\/.*/,'').trim()||'yourdomain.com';
-  const cnameTarget = tenantData?.cname_target||'ingress.aegis-shield.net';
-  const ingressIp   = tenantData?.ingress_ip||'—';
-  const shortTid    = tenantData?.tenant_id ? tenantData.tenant_id.slice(0,8)+'…' : '…';
+  const shortArn = arnValue.length > 40 ? arnValue.slice(0,18)+'…'+arnValue.slice(-12) : arnValue;
 
   return (
     <div style={{minHeight:'100vh',background:'#fafaf9'}}>
@@ -544,98 +532,101 @@ const Onboarding = ({onBack, onSuccess}) => {
           ))}
         </div>
 
-        {/* Step 1 */}
+        {/* ── Step 1: Cloud Authentication ── */}
         {step===1&&(
           <div className="fade-up">
-            <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Step 1 of 3</div>
-            <h2 className="serif text-4xl font-medium text-stone-900 leading-tight mb-3">Verify your domain.</h2>
-            <p className="text-stone-500 leading-relaxed mb-8 text-sm">Enter the domain you wish to protect. Our control plane will provision a dedicated reverse proxy configuration and return the exact DNS record you need.</p>
-            <form onSubmit={handleVerify}>
-              <div className="mb-2"><label className="block text-xs text-stone-500 mb-2 tracking-wide uppercase">Domain to protect</label>
-              <input type="text" className="fi" placeholder="api.example.com" autoFocus value={domain} onChange={e=>setDomain(e.target.value)} disabled={verifying} style={{fontSize:'16px',padding:'13px 15px'}}/></div>
-              <p className="text-xs text-stone-400 mb-5">Enter the root domain or subdomain you want shielded by Aegis.</p>
+            <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Step 1 of 3 · Cloud Authentication</div>
+            <h2 className="serif text-4xl font-medium text-stone-900 leading-tight mb-3">Grant provisioning access.</h2>
+            <p className="text-stone-500 leading-relaxed mb-2 text-sm">Create a cross-account IAM Role in your AWS account and provide its ARN. Aegis will assume this role via STS to provision your VPC stack, then immediately release access.</p>
+            <div className="border border-stone-100 rounded-sm bg-white px-4 py-3 mb-7">
+              {[
+                'Go to AWS IAM → Roles → Create Role',
+                'Trusted entity: Another AWS account (ID: 123456789012)',
+                'Attach policy: AegisProvisionPolicy (see GitHub)',
+                'Name it AegisProvisionRole and copy the ARN below',
+              ].map((s,i)=>(
+                <div key={i} className="flex items-start gap-3 py-1.5">
+                  <span className="text-xs font-mono text-stone-300 flex-shrink-0 mt-0.5">{String(i+1).padStart(2,'0')}</span>
+                  <span className="text-xs text-stone-500 leading-relaxed">{s}</span>
+                </div>
+              ))}
+            </div>
+            <form onSubmit={handleArnSubmit}>
+              <div className="mb-2">
+                <label className="block text-xs text-stone-500 mb-2 tracking-wide uppercase">AWS IAM Role ARN</label>
+                <input type="text" className="fi" placeholder="arn:aws:iam::123456789012:role/AegisProvisionRole"
+                  autoFocus value={arnValue} onChange={e=>{setArnValue(e.target.value);setApiError('');}} disabled={verifying}
+                  style={{fontSize:'14px',padding:'13px 15px',fontFamily:'monospace'}}/>
+              </div>
+              <p className="text-xs text-stone-400 mb-5">Format: <span className="font-mono">arn:aws:iam::&lt;account-id&gt;:role/&lt;role-name&gt;</span></p>
               {apiError&&<div className="border border-stone-200 bg-white rounded-sm px-4 py-3.5 mb-5"><div className="text-xs text-stone-600 leading-relaxed font-mono whitespace-pre-wrap">{apiError}</div></div>}
-              <button type="submit" className="pb" disabled={verifying||!domain.trim()} style={{padding:'13px'}}>
-                {verifying?'Provisioning tenant…':'Verify Domain →'}
+              <button type="submit" className="pb" disabled={verifying||!arnValue.trim()} style={{padding:'13px'}}>
+                {verifying?'Verifying IAM access…':'Authenticate & Deploy →'}
               </button>
             </form>
           </div>
         )}
 
-        {/* Step 2 */}
+        {/* ── Step 2: Infrastructure Provisioning ── */}
         {step===2&&(
           <div className="fade-up">
-            <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Step 2 of 3</div>
-            <h2 className="serif text-4xl font-medium text-stone-900 leading-tight mb-3">Configure your DNS.</h2>
-            <p className="text-stone-500 leading-relaxed mb-6 text-sm">Add the following record to your DNS provider for <strong className="text-stone-800 font-medium">{cleanDomain}</strong>.</p>
-            {tenantData&&(
-              <div className="flex flex-wrap items-center gap-2 mb-6">
-                <span className="text-xs font-mono text-stone-400 border border-stone-200 rounded-sm px-2.5 py-1 bg-white">id: {shortTid}</span>
-                <span className="text-xs font-mono text-stone-400 border border-stone-200 rounded-sm px-2.5 py-1 bg-white">ip: {ingressIp}</span>
-                <span className="text-xs text-stone-500 border border-stone-200 rounded-sm px-2.5 py-1 bg-white">{tenantData.status==='already_provisioned'?'existing tenant':'newly provisioned'}</span>
-              </div>
-            )}
-            <div className="border border-stone-200 rounded-sm overflow-hidden mb-3">
-              <div className="flex items-center justify-between px-5 py-3 bg-stone-50 border-b border-stone-200">
-                <span className="text-xs text-stone-500 font-medium uppercase tracking-widest">DNS Record to Add</span>
-                <button onClick={copy} className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-800 transition-colors"><div className="w-3 h-3"><CopyIco/></div>{copied?'Copied!':'Copy target'}</button>
-              </div>
-              <table className="w-full">
-                <tbody>
-                  {[['Type','CNAME'],['Name','@'],['Target',cnameTarget],['TTL','300']].map(([k,v],i,arr)=>(
-                    <tr key={k} className={i<arr.length-1?'border-b border-stone-100':''}>
-                      <td className="px-5 py-3.5 text-xs font-medium text-stone-400 uppercase tracking-wide w-20">{k}</td>
-                      <td className="px-5 py-3.5 text-sm text-stone-800 font-mono">{v}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Step 2 of 3 · Infrastructure Provisioning</div>
+            <h2 className="serif text-4xl font-medium text-stone-900 leading-tight mb-3">Deploying your stack…</h2>
+            <p className="text-stone-500 leading-relaxed mb-2 text-sm">Aegis is provisioning resources inside your VPC using your IAM Role. This typically completes in under 8 minutes.</p>
+            <div className="text-xs font-mono text-stone-300 mb-8">{shortArn}</div>
+            <div className="border border-stone-100 rounded-sm bg-white overflow-hidden">
+              {PROV_STEPS.map((ps,i) => {
+                const item = provItems.find(p=>p.id===ps.id);
+                const active = item && !item.done;
+                const done   = item && item.done;
+                return (
+                  <div key={ps.id} className={`flex items-center gap-4 px-5 py-3.5 ${i<PROV_STEPS.length-1?'border-b border-stone-50':''} transition-all duration-300`}
+                    style={{background: done?'rgba(106,148,121,0.03)':'#fff'}}>
+                    <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+                      {done ? (
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke={TC.sage} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                      ) : active ? (
+                        <span className="w-2 h-2 rounded-full" style={{background:'#b45309',animation:'blink 1s infinite',display:'inline-block'}}/>
+                      ) : (
+                        <span className="w-2 h-2 rounded-full bg-stone-200" style={{display:'inline-block'}}/>
+                      )}
+                    </div>
+                    <span className="text-sm font-mono" style={{color: done?TC.sage : active?'#1c1917':'#a8a29e'}}>{ps.label}</span>
+                  </div>
+                );
+              })}
             </div>
-            <p className="text-xs text-stone-400 leading-relaxed mb-8">DNS changes typically propagate within 5–30 minutes. We'll verify automatically after you confirm — polling every 3 seconds.</p>
-            <button className="pb mb-3" onClick={handleDnsConfirm} style={{padding:'13px'}}>I've added the DNS record →</button>
-            <button className="pb pbo" onClick={()=>setStep(1)} style={{padding:'11px',fontSize:'13px'}}>Back</button>
           </div>
         )}
 
-        {/* Step 3 */}
-        {step===3&&(
-          <div className="fade-up">
-            <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Step 3 of 3</div>
-            {!success?(
-              <div className="text-center py-6">
-                <div className="relative w-16 h-16 mx-auto mb-10">
-                  <div className="absolute inset-0 rounded-full" style={{background:'rgba(106,148,121,0.12)',animation:'pulseRing 2.2s ease-out infinite'}}/>
-                  <div className="absolute inset-0 rounded-full" style={{background:'rgba(106,148,121,0.18)',animation:'pulseRing 2.2s ease-out 0.65s infinite'}}/>
-                  <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{background:TC.sage}}>
-                    <div className="w-4 h-4 text-white"><ShieldIco/></div>
-                  </div>
-                </div>
-                <h2 className="serif text-3xl font-medium text-stone-900 leading-tight mb-4">Awaiting DNS Propagation…</h2>
-                <p className="text-stone-500 text-sm leading-relaxed max-w-sm mx-auto mb-4">Verifying that <strong className="text-stone-700 font-medium">{cleanDomain}</strong> is pointing to the Aegis network.</p>
-                <div className="inline-flex items-center gap-2 border border-stone-200 rounded-sm px-3.5 py-2 bg-white">
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:TC.sage,animation:'blink 1.4s infinite',display:'inline-block'}}/>
-                  <span className="text-xs text-stone-500 font-mono">GET /api/check-dns/{shortTid} · every 3s</span>
-                </div>
+        {/* ── Step 3: Success ── */}
+        {step===3&&success&&(
+          <div className="fade-up text-center py-4">
+            <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Step 3 of 3 · Deployment Complete</div>
+            <div className="relative w-16 h-16 mx-auto mb-8">
+              <div className="absolute inset-0 rounded-full" style={{background:'rgba(106,148,121,0.12)',animation:'pulseRing 2.2s ease-out infinite'}}/>
+              <div className="absolute inset-0 rounded-full" style={{background:'rgba(106,148,121,0.18)',animation:'pulseRing 2.2s ease-out 0.65s infinite'}}/>
+              <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{background:TC.sage}}>
+                <div className="w-4 h-4 text-white"><ShieldIco/></div>
               </div>
-            ):(
-              <div className="text-center py-4 fade-up">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-8" style={{background:'rgba(106,148,121,0.1)'}}>
-                  <div className="w-7 h-7" style={{color:TC.sage}}><ShieldIco/></div>
-                </div>
-                <div className="text-xs uppercase tracking-widest font-medium mb-4" style={{color:TC.sage}}>Protected</div>
-                <h2 className="serif text-3xl font-medium text-stone-900 leading-tight mb-3">Traffic is now routed through<br/>the Aegis Cloud.</h2>
-                <p className="text-stone-500 text-sm leading-relaxed mb-6"><strong className="text-stone-800 font-medium">{cleanDomain}</strong> is fully shielded.</p>
-                {redirecting ? (
-                  <div className="flex items-center justify-center gap-2 text-sm text-stone-400">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{background:TC.sage,animation:'blink 1.2s infinite',display:'inline-block'}}/>
-                    Redirecting to your dashboard…
-                  </div>
-                ) : (
-                  <button className="pb max-w-xs mx-auto" onClick={()=>onSuccess&&onSuccess(tenantData)} style={{padding:'13px'}}>
-                    Open Dashboard →
-                  </button>
-                )}
+            </div>
+            <div className="text-xs uppercase tracking-widest font-medium mb-4" style={{color:TC.sage}}>Infrastructure Deployed</div>
+            <h2 className="serif text-3xl font-medium text-stone-900 leading-tight mb-3">Traffic is now routed through<br/>your local Aegis SQS buffer.</h2>
+            <p className="text-stone-500 text-sm leading-relaxed mb-6">Your AWS VPC is fully protected. All edge traffic passes through your in-VPC SQS buffer and AI core — no data leaves your cloud environment.</p>
+            <div className="flex flex-wrap justify-center gap-2 mb-8">
+              {['SQS Buffers ✓','EC2 Edge Sensors ✓','AI Core ✓','NACL Rules ✓'].map(b=>(
+                <span key={b} className="text-xs font-mono border border-stone-200 rounded-sm px-2.5 py-1 bg-white" style={{color:TC.sage}}>{b}</span>
+              ))}
+            </div>
+            {redirecting ? (
+              <div className="flex items-center justify-center gap-2 text-sm text-stone-400">
+                <span className="w-1.5 h-1.5 rounded-full" style={{background:TC.sage,animation:'blink 1.2s infinite',display:'inline-block'}}/>
+                Redirecting to your dashboard…
               </div>
+            ) : (
+              <button className="pb max-w-xs mx-auto" onClick={()=>onSuccess&&onSuccess(tenantData)} style={{padding:'13px'}}>
+                Open Dashboard →
+              </button>
             )}
           </div>
         )}
@@ -649,31 +640,30 @@ const Onboarding = ({onBack, onSuccess}) => {
    Phases: nominal → breach (3s) → mitigating (auto)
    ═══════════════════════════════════════════════════════════════════════════ */
 const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => {
-  const domain  = tenantData?.domain_name || 'api.demo-tenant.com';
-  const tenId   = tenantData?.tenant_id   || 'demo';
-  const ingressIp = tenantData?.ingress_ip || '34.100.182.41';
+  const domain    = tenantData?.domain_name || 'api.demo-tenant.com';
+  const tenId     = tenantData?.tenant_id   || 'demo';
+  const ingressIp = tenantData?.ingress_ip  || '34.100.182.41';
 
   /* ── Simulation State ── */
-  const [phase,      setPhase]      = useState('nominal');
-  const [attacked,   setAttacked]   = useState(false);
-  const [events,     setEvents]     = useState([]);
-  const [naclRules,  setNaclRules]  = useState([]);
-  const [displayM,   setDisplayM]   = useState({ edge:375, anomaly:0.145, origin:372 });
+  const [phase,       setPhase]       = useState('nominal'); // 'nominal'|'flashCrowd'|'breach'|'mitigating'
+  const [simScenario, setSimScenario] = useState(null);      // null|'flashCrowd'|'botnet'
+  const [events,      setEvents]      = useState([]);
+  const [naclRules,   setNaclRules]   = useState([]);
+  const [displayM,    setDisplayM]    = useState({ edge:375, anomaly:0.145, origin:372, entropy:7.62, sqsUtil:4.2 });
 
-  const metricsRef    = useRef({ edge:375, anomaly:0.145, origin:372 });
+  const metricsRef    = useRef({ edge:375, anomaly:0.145, origin:372, entropy:7.62, sqsUtil:4.2 });
   const phaseRef      = useRef('nominal');
   const phaseTimerRef = useRef(null);
   const evtIdRef      = useRef(0);
 
   const addEvent = useCallback((msg, type='info') => {
     const t = new Date().toTimeString().slice(0,8);
-    setEvents(prev => [{id:evtIdRef.current++, time:t, msg, type}, ...prev].slice(0,16));
+    setEvents(prev => [{id:evtIdRef.current++, time:t, msg, type}, ...prev].slice(0,18));
   }, []);
 
-  /* sync phase ref */
   useEffect(() => { phaseRef.current = phase; }, [phase]);
 
-  /* breach → mitigating auto-timer */
+  /* breach → mitigating auto-timer (botnet only) */
   useEffect(() => {
     if (phase !== 'breach') return;
     phaseTimerRef.current = setTimeout(() => {
@@ -681,7 +671,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
       addEvent('Boto3 NACL rules injected via aws_infrastructure/aegis_nacl.py.', 'success');
       addEvent('847 malicious IP ranges blocked. Attacker traffic dropped at the edge.', 'success');
       addEvent('Origin server fully isolated. Load normalizing.', 'success');
-      addEvent('Threat neutralized. System secured. Nominal monitoring resumed.', 'success');
+      addEvent('Threat neutralized. System secured.', 'success');
       setNaclRules([
         { rule:100, cidr:'203.0.113.0/24',  proto:'ALL', dir:'INBOUND', hits:'42,301' },
         { rule:110, cidr:'198.51.100.0/24', proto:'ALL', dir:'INBOUND', hits:'38,192' },
@@ -691,35 +681,47 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
     return () => { if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current); };
   }, [phase]);
 
-  /* initial event */
   useEffect(() => {
     addEvent(`Aegis protection active for ${domain}. Monitoring live traffic.`, 'info');
   }, []);
 
-  /* ── Animation loop (120ms ticks) ── */
+  /* ── Animation loop (120ms) ── */
   useEffect(() => {
     const loop = setInterval(() => {
       const p = phaseRef.current;
       const m = metricsRef.current;
       const j = (v, r) => v + (Math.random()-0.5)*2*r;
 
-      let tE, tA, tO, fE, fA, fO;
+      let tE, tA, tO, tN, tS;   // targets: edge, anomaly, origin, eNtropy, sqsUtil
+      let fE, fA, fO, fN, fS;   // lerp factors
+
       if (p === 'nominal') {
-        tE=j(375,75);  tA=Math.max(0.09,Math.min(0.21,j(0.15,0.03))); tO=j(375,60);
-        fE=0.10; fA=0.10; fO=0.10;
+        tE=j(375,75);  tA=Math.max(0.09,Math.min(0.21,j(0.15,0.03)));
+        tO=j(375,60);  tN=Math.max(7.0,Math.min(8.0,j(7.65,0.12)));  tS=j(4.5,2);
+        fE=0.10; fA=0.10; fO=0.10; fN=0.08; fS=0.12;
+      } else if (p === 'flashCrowd') {
+        // Entropy STAYS HIGH (slow lerp, high target) — legitimate diverse traffic
+        tE=j(95000,5000); tA=Math.max(0.20,Math.min(0.30,j(0.25,0.03)));
+        tO=j(2500,200);   tN=Math.max(7.3,Math.min(8.0,j(7.72,0.10))); tS=j(78,8);
+        fE=0.35; fA=0.10; fO=0.20; fN=0.06; fS=0.18; // fN very slow: entropy barely moves
       } else if (p === 'breach') {
-        tE=j(87000,4000); tA=0.92; tO=j(615,30);
-        fE=0.35; fA=0.28; fO=0.06;
+        // Entropy DROPS FAST (fast lerp, low target) — botnet coordinated attack
+        tE=j(95000,4000); tA=0.92;
+        tO=j(615,30);     tN=Math.max(1.0,Math.min(2.0,j(1.35,0.18))); tS=j(93,3);
+        fE=0.35; fA=0.28; fO=0.06; fN=0.38; fS=0.25; // fN fast: entropy collapses visibly
       } else { /* mitigating */
-        tE=j(400,50); tA=Math.max(0.12,Math.min(0.18,j(0.14,0.02))); tO=j(400,20);
-        fE=0.22; fA=0.12; fO=0.18;
+        tE=j(400,50);  tA=Math.max(0.12,Math.min(0.18,j(0.14,0.02)));
+        tO=j(400,20);  tN=Math.max(6.8,Math.min(8.0,j(7.5,0.2)));  tS=j(4.5,2);
+        fE=0.22; fA=0.12; fO=0.18; fN=0.10; fS=0.20;
       }
 
       const L = (a,b,f) => a+(b-a)*f;
       const next = {
-        edge:    Math.max(0,    L(m.edge,    tE, fE)),
-        anomaly: Math.min(1, Math.max(0, L(m.anomaly, tA, fA))),
-        origin:  Math.max(0,    L(m.origin,  tO, fO)),
+        edge:    Math.max(0,   L(m.edge,    tE, fE)),
+        anomaly: Math.min(1,   Math.max(0,  L(m.anomaly, tA, fA))),
+        origin:  Math.max(0,   L(m.origin,  tO, fO)),
+        entropy: Math.min(8,   Math.max(0,  L(m.entropy, tN, fN))),
+        sqsUtil: Math.min(100, Math.max(0,  L(m.sqsUtil, tS, fS))),
       };
       metricsRef.current = next;
       setDisplayM({...next});
@@ -727,21 +729,32 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
     return () => clearInterval(loop);
   }, []);
 
-  /* ── Attack ── */
-  const launchAttack = () => {
-    if (attacked) return;
-    setAttacked(true);
+  /* ── Launch: Flash Crowd (Legitimate Viral Surge) ── */
+  const launchFlashCrowd = () => {
+    if (simScenario !== null) return;
+    setSimScenario('flashCrowd');
+    setPhase('flashCrowd');
+    addEvent('Viral traffic surge detected. Edge ingestion climbing to 95,000+ req/s.', 'info');
+    setTimeout(() => addEvent('IP entropy analysis: Diverse source IPs confirmed. Legitimate traffic pattern.', 'info'), 800);
+    setTimeout(() => addEvent('SQS buffer auto-scaling. Forwarding increased clean traffic to origin.', 'info'), 1600);
+    setTimeout(() => addEvent('AI verdict: Anomaly score nominal (0.25). No threat detected. Auto-scaling sustained.', 'info'), 2600);
+  };
+
+  /* ── Launch: Botnet (DDoS Attack) ── */
+  const launchBotnet = () => {
+    if (simScenario !== null) return;
+    setSimScenario('botnet');
     setPhase('breach');
-    addEvent('ALERT: Volumetric surge detected. Edge ingestion spiked to 87,000+ req/s.', 'alert');
-    setTimeout(()=>addEvent('SQS buffer auto-scaling. Absorbing attack volume.', 'alert'), 600);
-    setTimeout(()=>addEvent('AI Isolation Forest: Anomaly score climbing past threshold (0.60).', 'alert'), 1400);
-    setTimeout(()=>addEvent('Evaluating traffic distribution. Classifying malicious IP ranges…', 'alert'), 2200);
+    addEvent('ALERT: Volumetric surge detected. Edge ingestion spiked to 95,000+ req/s.', 'alert');
+    setTimeout(() => addEvent('IP entropy analysis: Narrow source IP range detected. Botnet pattern suspected.', 'alert'), 600);
+    setTimeout(() => addEvent('SQS buffer expanding. AI Isolation Forest evaluating distribution.', 'alert'), 1400);
+    setTimeout(() => addEvent('AI: Anomaly score climbing past threshold (0.60). Coordinated attack confirmed.', 'alert'), 2200);
   };
 
   const resetSim = () => {
     if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
-    setAttacked(false); setPhase('nominal'); setNaclRules([]);
-    metricsRef.current = {edge:375, anomaly:0.145, origin:372};
+    setSimScenario(null); setPhase('nominal'); setNaclRules([]);
+    metricsRef.current = {edge:375, anomaly:0.145, origin:372, entropy:7.62, sqsUtil:4.2};
     addEvent('Simulation reset. Nominal baseline monitoring resumed.', 'info');
   };
 
@@ -752,39 +765,90 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
   };
 
   const edgePct    = Math.min(100, (displayM.edge/100000)*100);
-  const originPct  = Math.min(100, (displayM.origin/100000)*100);
+  const originPct  = Math.min(100, (displayM.origin/5000)*100);  // max 5k req/s for origin bar
   const anomalyPct = Math.min(100, displayM.anomaly*100);
-  const breaching  = displayM.anomaly >= 0.60;
+  const entropyPct = (displayM.entropy/8)*100;
 
-  const phaseBarColor  = phase==='breach' ? TC.amberBar : TC.sage;
-  const statusTextColor= phase==='nominal' ? '#78716c' : phase==='breach' ? TC.amber : TC.sage;
-  const statusMsg = phase==='nominal'
-    ? 'System Nominal. Forwarding clean traffic to origin server.'
-    : phase==='breach'
-    ? 'Anomalous surge detected. SQS Buffer expanding. AI evaluating…'
+  const breaching   = displayM.anomaly >= 0.60;
+  const lowEntropy  = displayM.entropy  <  3.0;
+
+  // Scenario-aware colors
+  const slateBlue = '#475569';
+  const edgeBarColor =
+    phase==='flashCrowd' ? slateBlue :
+    phase==='breach'     ? TC.amberBar : TC.sage;
+
+  const statusTextColor =
+    phase==='nominal'    ? '#78716c'  :
+    phase==='flashCrowd' ? slateBlue  :
+    phase==='breach'     ? TC.amber   : TC.sage;
+
+  const statusMsg =
+    phase==='nominal'    ? 'System Nominal. Forwarding clean traffic to origin server.'
+    : phase==='flashCrowd' ? 'High Load / Benign Surge. IP diversity nominal. SQS Auto-scaling engaged.'
+    : phase==='breach'   ? 'Low Entropy Surge. Botnet suspected. AI evaluating…'
     : 'Threat Isolated. Boto3 NACL Rule Injected. Network Secured.';
 
-  const protectionDot = phase==='breach' ? TC.amberBar : TC.sage;
-  const protectionLabel = phase==='breach' ? 'Under Attack' : phase==='mitigating' ? 'Secured' : 'Protected';
+  const protectionDot =
+    phase==='breach'     ? TC.amberBar :
+    phase==='flashCrowd' ? slateBlue   : TC.sage;
+  const protectionLabel =
+    phase==='breach'     ? 'Under Attack' :
+    phase==='flashCrowd' ? 'High Load'    :
+    phase==='mitigating' ? 'Secured'      : 'Protected';
 
-  /* pipeline nodes */
-  const pipelineNodes = [
-    { icon:<GlobeIco/>,  label:'Open Internet',  sub:'Attack source',      state:'neutral' },
-    { icon:<BoxIco/>,    label:'SQS Buffer',      sub:'Aegis Absorber',     state: phase==='breach'?'warn':phase==='mitigating'?'safe':'neutral' },
-    { icon:<BrainIco/>,  label:'AI Engine',       sub:'Isolation Forest',   state: phase==='breach'?'warn':phase==='mitigating'?'safe':'neutral' },
-    { icon:<NaclIco/>,   label:'VPC NACL',        sub:'AWS Firewall',       state: phase==='mitigating'?'safe':'neutral' },
-    { icon:<ServerIco/>, label:'Origin Server',   sub:'Your server',        state: 'safe' },
-  ];
-  const nodeColors = {
-    neutral: { border:'#e7e5e4', bg:'#fff',         icon:'#a8a29e' },
-    warn:    { border:'#fde68a', bg:'#fffbeb',       icon:TC.amberBar },
-    safe:    { border:'rgba(106,148,121,0.4)', bg:'rgba(106,148,121,0.05)', icon:TC.sage },
+  /* ── Pipeline node states ── */
+  const nodeState = (i) => {
+    const s = {
+      nominal:    ['neutral','neutral','neutral','neutral','safe'],
+      flashCrowd: ['surge',  'surge',  'neutral','neutral','safe'],
+      breach:     ['warn',   'warn',   'warn',   'neutral','safe'],
+      mitigating: ['neutral','neutral','safe',   'safe',   'safe'],
+    };
+    return (s[phase] || s.nominal)[i];
   };
+  const nodeColors = {
+    neutral: { border:'#e7e5e4',                       bg:'#fff',                             icon:'#a8a29e' },
+    warn:    { border:'#fde68a',                       bg:'#fffbeb',                          icon:TC.amberBar },
+    safe:    { border:'rgba(106,148,121,0.4)',          bg:'rgba(106,148,121,0.05)',           icon:TC.sage },
+    surge:   { border:'#cbd5e1',                       bg:'rgba(71,85,105,0.04)',              icon:slateBlue },
+  };
+  const pipelineNodes = [
+    { icon:<GlobeIco/>,  label:'Open Internet',  sub:'Traffic source' },
+    { icon:<BoxIco/>,    label:'SQS Buffer',      sub:'Aegis Absorber' },
+    { icon:<BrainIco/>,  label:'AI Engine',       sub:'Isolation Forest' },
+    { icon:<NaclIco/>,   label:'VPC NACL',        sub:'AWS Firewall' },
+    { icon:<ServerIco/>, label:'Origin Server',   sub:'Your server' },
+  ];
   const connectorColor = (i) => {
-    if (phase==='breach'    && i>=1 && i<=2) return '#fde68a';
-    if (phase==='mitigating'&& i>=1 && i<=3) return 'rgba(106,148,121,0.4)';
+    if (phase==='flashCrowd' && i<=1) return '#cbd5e1';
+    if (phase==='breach' && i>=0 && i<=2) return '#fde68a';
+    if (phase==='mitigating' && i>=1) return 'rgba(106,148,121,0.4)';
     return '#e7e5e4';
   };
+
+  /* ── Phase timeline cards (scenario-aware) ── */
+  const flashCrowdPhases = [
+    { label:'Phase 1 · Nominal',      active:phase==='nominal',     done:simScenario==='flashCrowd',
+      detail:'Edge ~375 req/s · Entropy HIGH · Origin stable', color:'sage' },
+    { label:'Phase 2 · Viral Surge',  active:phase==='flashCrowd',  done:false,
+      detail:'Edge ~95k req/s · Entropy stays HIGH · Origin scales to ~2.5k', color:'slate' },
+  ];
+  const botnetPhases = [
+    { label:'Phase 1 · Nominal',          active:phase==='nominal',     done:simScenario==='botnet',
+      detail:'Edge ~375 req/s · Entropy HIGH · Anomaly ~0.15', color:'sage' },
+    { label:'Phase 2 · Volumetric Breach',active:phase==='breach',      done:phase==='mitigating',
+      detail:'Edge spikes 95k+ · Entropy DROPS · Anomaly → 0.92', color:'amber' },
+    { label:'Phase 3 · Mitigation',       active:phase==='mitigating',  done:false,
+      detail:'NACL injected · Entropy recovers · Origin stable', color:'sage' },
+  ];
+  const phaseCards = simScenario === 'flashCrowd' ? flashCrowdPhases : simScenario === 'botnet' ? botnetPhases : null;
+  const phaseCardColor = (p) => ({
+    active: { sage:'rgba(106,148,121,0.4)', slate:'#cbd5e1', amber:'#fde68a' }[p.color],
+    bg:     { sage:'rgba(106,148,121,0.04)', slate:'rgba(71,85,105,0.04)', amber:'#fffbeb' }[p.color],
+    dot:    { sage:TC.sage, slate:slateBlue, amber:TC.amberBar }[p.color],
+    text:   { sage:TC.sage, slate:slateBlue, amber:'#92400e' }[p.color],
+  });
 
   return (
     <div style={{minHeight:'100vh', background:'#fafaf9'}}>
@@ -803,9 +867,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
             </div>
           </div>
           <div className="flex items-center gap-5">
-            <button onClick={onBackToSite} className="text-sm text-stone-400 hover:text-stone-700 transition-colors hidden sm:block">
-              ← Landing page
-            </button>
+            <button onClick={onBackToSite} className="text-sm text-stone-400 hover:text-stone-700 transition-colors hidden sm:block">← Landing page</button>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-700 flex-shrink-0">S</div>
               <span className="text-sm font-medium text-stone-700 hidden md:block">{userName}</span>
@@ -818,12 +880,10 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
 
         {/* Page header */}
         <div className="mb-10 pt-2">
-          <div className="text-xs uppercase tracking-widest text-stone-400 mb-2">Tenant Dashboard · Model A</div>
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-2">Tenant Dashboard · Model B · VPC Deployment</div>
           <div className="flex items-end gap-4 flex-wrap">
             <h1 className="serif text-3xl font-medium text-stone-900">{domain}</h1>
-            <span className="text-sm font-mono text-stone-400 border border-stone-200 rounded-sm px-2.5 py-1 bg-white mb-0.5">
-              {tenId.slice(0,12)}…
-            </span>
+            <span className="text-sm font-mono text-stone-400 border border-stone-200 rounded-sm px-2.5 py-1 bg-white mb-0.5">{tenId.slice(0,12)}…</span>
           </div>
           <p className="text-sm text-stone-400 mt-1.5">
             Ingress IP: <span className="font-mono">{ingressIp}</span>
@@ -832,25 +892,24 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
           </p>
         </div>
 
-        {/* ── Metric Cards ── */}
-        <div className="grid md:grid-cols-3 gap-5 mb-6">
+        {/* ── Metric Cards (4-column) ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
 
-          {/* Edge Ingestion */}
+          {/* 1. Edge Ingestion Rate */}
           <div className="card p-6">
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-5">Edge Ingestion Rate</div>
             <div className="flex items-baseline gap-2 mb-1.5">
-              <span className="serif text-4xl font-medium text-stone-900" style={{lineHeight:1,fontVariantNumeric:'tabular-nums'}}>
-                {fmtReq(displayM.edge)}
-              </span>
+              <span className="serif text-4xl font-medium text-stone-900" style={{lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{fmtReq(displayM.edge)}</span>
               <span className="text-sm text-stone-400">req/s</span>
             </div>
-            <div className="text-xs mb-4 h-4 transition-colors duration-400" style={{color: phaseBarColor}}>
-              {phase==='nominal' ? '↑ Nominal baseline (SQS buffer idle)'
-               : phase==='breach' ? '↑↑ Surge absorbed by SQS buffer'
+            <div className="text-xs mb-4 h-4 transition-colors duration-400" style={{color:edgeBarColor}}>
+              {phase==='nominal'    ? '↑ Nominal baseline (SQS buffer idle)'
+               : phase==='flashCrowd' ? '↑↑ Surge — SQS absorbing & forwarding'
+               : phase==='breach'   ? '↑↑ Surge absorbed by SQS buffer'
                : '↓ Attack traffic blocked by NACL'}
             </div>
             <div className="metric-bar">
-              <div className="metric-bar-fill" style={{width:`${edgePct.toFixed(2)}%`, background: phaseBarColor}}/>
+              <div className="metric-bar-fill" style={{width:`${edgePct.toFixed(2)}%`, background:edgeBarColor}}/>
             </div>
             <div className="flex justify-between mt-1.5">
               <span className="text-xs text-stone-300 font-mono">0</span>
@@ -858,58 +917,106 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
             </div>
           </div>
 
-          {/* Anomaly Score — hero metric */}
+          {/* 2. AI Anomaly Score */}
           <div className="card p-6 transition-all duration-500"
-            style={{
-              borderColor: breaching ? '#fde68a' : '#e7e5e4',
-              background:  breaching ? '#fffbeb' : '#fff',
-            }}>
+            style={{borderColor:breaching?'#fde68a':'#e7e5e4', background:breaching?'#fffbeb':'#fff'}}>
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-5">AI Anomaly Score</div>
             <div className="flex items-baseline gap-2 mb-1.5">
               <span className="text-4xl font-mono font-medium transition-colors duration-300"
-                style={{lineHeight:1, color: breaching ? '#92400e' : '#1c1917', fontVariantNumeric:'tabular-nums'}}>
+                style={{lineHeight:1, color:breaching?'#92400e':'#1c1917', fontVariantNumeric:'tabular-nums'}}>
                 {displayM.anomaly.toFixed(3)}
               </span>
               <span className="text-sm text-stone-400">/ 1.00</span>
             </div>
             <div className="text-xs mb-4 h-4 transition-colors duration-300"
-              style={{color: breaching ? '#92400e' : TC.sage}}>
-              {breaching ? '⚠ Threshold breached (≥ 0.60)' : '✓ Within safe threshold (< 0.60)'}
+              style={{color:breaching?'#92400e':TC.sage}}>
+              {breaching ? '⚠ Threshold breached (>= 0.60)' : '✓ Within safe threshold (< 0.60)'}
             </div>
-            {/* Bar with 0.60 threshold marker */}
             <div className="relative metric-bar">
-              <div className="metric-bar-fill" style={{width:`${anomalyPct.toFixed(2)}%`, background: breaching ? TC.amberBar : TC.sage}}/>
-              {/* Threshold tick */}
-              <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-0.5 h-3 rounded-full" style={{left:'60%', background:'#fbbf24', zIndex:2}}/>
+              <div className="metric-bar-fill" style={{width:`${anomalyPct.toFixed(2)}%`, background:breaching?TC.amberBar:TC.sage}}/>
+              <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-0.5 h-3 rounded-full" style={{left:'60%',background:'#fbbf24',zIndex:2}}/>
             </div>
             <div className="flex justify-between mt-1.5">
               <span className="text-xs text-stone-300 font-mono">0.00</span>
-              <span className="text-xs font-mono" style={{color:'#f59e0b', opacity:.7}}>0.60</span>
+              <span className="text-xs font-mono" style={{color:'#f59e0b',opacity:.7}}>0.60</span>
               <span className="text-xs text-stone-300 font-mono">1.00</span>
             </div>
           </div>
 
-          {/* Origin Server Load */}
+          {/* 3. Origin Server Load */}
           <div className="card p-6">
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-5">Origin Server Load</div>
             <div className="flex items-baseline gap-2 mb-1.5">
-              <span className="serif text-4xl font-medium text-stone-900" style={{lineHeight:1,fontVariantNumeric:'tabular-nums'}}>
-                {fmtReq(displayM.origin)}
-              </span>
+              <span className="serif text-4xl font-medium text-stone-900" style={{lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{fmtReq(displayM.origin)}</span>
               <span className="text-sm text-stone-400">req/s</span>
             </div>
-            <div className="text-xs mb-4 h-4" style={{color: TC.sage}}>
-              {phase==='breach' ? '✓ Stable — shielded by Aegis buffer' : '✓ Stable — clean traffic only'}
+            <div className="text-xs mb-4 h-4" style={{color:phase==='flashCrowd'?slateBlue:TC.sage}}>
+              {phase==='flashCrowd' ? '↑ Scaling — forwarding legitimate surge'
+               : phase==='breach'  ? '✓ Stable — shielded by Aegis buffer'
+               : '✓ Stable — clean traffic only'}
             </div>
             <div className="metric-bar">
-              <div className="metric-bar-fill" style={{width:`${originPct.toFixed(2)}%`, background: TC.sage}}/>
+              <div className="metric-bar-fill" style={{width:`${originPct.toFixed(2)}%`, background:phase==='flashCrowd'?slateBlue:TC.sage}}/>
             </div>
             <div className="flex justify-between mt-1.5">
               <span className="text-xs text-stone-300 font-mono">0</span>
-              <span className="text-xs text-stone-300 font-mono">100k req/s</span>
+              <span className="text-xs text-stone-300 font-mono">5k req/s</span>
             </div>
           </div>
 
+          {/* 4. IP Distribution Entropy (NEW) */}
+          <div className="card p-6 transition-all duration-500"
+            style={{borderColor:lowEntropy?'#fde68a':'#e7e5e4', background:lowEntropy?'#fffbeb':'#fff'}}>
+            <div className="text-xs uppercase tracking-widest text-stone-400 mb-5">IP Distribution Entropy</div>
+            <div className="flex items-baseline gap-2 mb-1.5">
+              <span className="text-4xl font-mono font-medium transition-colors duration-300"
+                style={{lineHeight:1, color:lowEntropy?'#92400e':'#1c1917', fontVariantNumeric:'tabular-nums'}}>
+                {displayM.entropy.toFixed(2)}
+              </span>
+              <span className="text-sm text-stone-400">bits</span>
+            </div>
+            <div className="text-xs mb-1 h-4 transition-colors duration-300"
+              style={{color:lowEntropy?'#92400e':TC.sage}}>
+              {lowEntropy ? '⚠ Low — Coordinated botnet pattern' : '✓ High — Diverse legitimate sources'}
+            </div>
+            <div className="text-xs text-stone-300 font-mono mb-3">H = −Σ pᵢ log₂ pᵢ · Max 8 bits</div>
+            <div className="metric-bar">
+              <div className="metric-bar-fill" style={{width:`${entropyPct.toFixed(2)}%`, background:lowEntropy?TC.amberBar:TC.sage}}/>
+            </div>
+            <div className="flex justify-between mt-1.5">
+              <span className="text-xs text-stone-300 font-mono">0.00</span>
+              <span className="text-xs text-stone-300 font-mono">8.00 bits</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── SQS Buffer Utilization ── */}
+        <div className="card p-5 mb-5">
+          <div className="flex items-center justify-between mb-2.5">
+            <div>
+              <span className="text-xs uppercase tracking-widest text-stone-400 font-medium">SQS Buffer Utilization</span>
+              <span className="ml-3 text-xs text-stone-300 font-mono hidden sm:inline">Aegis-Ingestion-Queue</span>
+            </div>
+            <span className="text-xs font-mono font-medium tabular-nums"
+              style={{color:displayM.sqsUtil>85?TC.amberBar:displayM.sqsUtil>60?slateBlue:TC.sage}}>
+              {Math.round(displayM.sqsUtil)}%
+            </span>
+          </div>
+          <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-200"
+              style={{
+                width:`${displayM.sqsUtil.toFixed(1)}%`,
+                background: displayM.sqsUtil>85 ? TC.amberBar : displayM.sqsUtil>60 ? slateBlue : TC.sage,
+              }}/>
+          </div>
+          <div className="mt-2 text-xs" style={{color:'#a8a29e'}}>
+            {displayM.sqsUtil > 85
+              ? 'Buffer under heavy load. Messages queued for AI evaluation.'
+              : displayM.sqsUtil > 55
+              ? 'Buffer absorbing elevated traffic volume. Auto-scaling active.'
+              : 'Buffer idle. Normal throughput. Messages processed in real-time.'}
+          </div>
         </div>
 
         {/* ── Live Pipeline ── */}
@@ -917,11 +1024,11 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
           <div className="text-xs uppercase tracking-widest text-stone-400 mb-6">Live Traffic Pipeline</div>
           <div className="flex items-center">
             {pipelineNodes.map((node,i) => {
-              const c = nodeColors[node.state];
+              const c = nodeColors[nodeState(i)];
               return (
                 <React.Fragment key={i}>
                   <div className="flex flex-col items-center gap-2 flex-shrink-0" style={{minWidth:'72px'}}>
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-600"
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500"
                       style={{borderColor:c.border, background:c.bg}}>
                       <div className="w-4 h-4 transition-colors duration-500" style={{color:c.icon}}>{node.icon}</div>
                     </div>
@@ -930,14 +1037,13 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
                       <div className="text-xs text-stone-400 leading-tight">{node.sub}</div>
                     </div>
                   </div>
-                  {i<pipelineNodes.length-1&&(
+                  {i<pipelineNodes.length-1 && (
                     <div className="flex-1 mx-2 h-px transition-all duration-700" style={{background:connectorColor(i)}}/>
                   )}
                 </React.Fragment>
               );
             })}
           </div>
-          {/* Phase sub-label */}
           <div className="mt-6 pt-5 border-t border-stone-100 flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:statusTextColor, animation:'blink 1.4s infinite', display:'inline-block'}}/>
             <span className="text-xs transition-colors duration-400 leading-relaxed" style={{color:statusTextColor}}>{statusMsg}</span>
@@ -946,66 +1052,95 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
 
         {/* ── Stress Test ── */}
         <div className="card p-6 mb-5">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-            <div>
-              <div className="text-xs uppercase tracking-widest text-stone-400 mb-1.5">Stress Test Network</div>
-              <p className="text-sm text-stone-500 max-w-lg">
-                Simulate a volumetric DDoS attack to demonstrate the full Model A mitigation pipeline — from SQS absorption to Isolation Forest detection to Boto3 NACL injection.
-              </p>
-            </div>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <button onClick={launchAttack} disabled={attacked}
-                className="text-sm font-medium px-5 py-2.5 border rounded-sm transition-all duration-200 flex-shrink-0"
-                style={{
-                  borderColor: phase==='mitigating' ? '#d6d3d1' : attacked&&phase==='breach' ? '#fde68a' : '#1c1917',
-                  color:       phase==='mitigating' ? '#a8a29e'  : attacked&&phase==='breach' ? '#92400e' : '#1c1917',
-                  background:  phase==='breach'     ? '#fffbeb'  : 'transparent',
-                  cursor:      attacked ? 'not-allowed' : 'pointer',
-                }}>
-                {phase==='breach'     ? 'Attack in progress…'
-                 : phase==='mitigating' ? '✓ Threat neutralized'
-                 : 'Launch Volumetric Attack'}
-              </button>
-              {attacked && (
-                <button onClick={resetSim} className="text-sm text-stone-400 hover:text-stone-700 transition-colors underline underline-offset-2 flex-shrink-0">
-                  Reset
-                </button>
-              )}
-            </div>
+          <div className="mb-5">
+            <div className="text-xs uppercase tracking-widest text-stone-400 mb-1.5">Stress Test Network</div>
+            <p className="text-sm text-stone-500 max-w-2xl">
+              Run two distinct scenarios to demonstrate how the AI differentiates a <strong className="text-stone-700 font-medium">legitimate viral surge</strong> (high entropy, scale-up) from a <strong className="text-stone-700 font-medium">coordinated botnet attack</strong> (entropy collapse, NACL injection).
+            </p>
           </div>
 
-          {/* Phase timeline */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label:'Phase 1 · Nominal', active: phase==='nominal', done: phase!=='nominal',
-                detail: 'Edge ~375 req/s · Anomaly ~0.15 · Origin stable' },
-              { label:'Phase 2 · Volumetric Breach', active: phase==='breach', done: phase==='mitigating',
-                detail: 'Edge spikes 87k+ · Anomaly → 0.92 · SQS buffer absorbs' },
-              { label:'Phase 3 · Autonomous Mitigation', active: phase==='mitigating', done: false,
-                detail: 'NACL injected · Anomaly resets · Origin remains stable' },
-            ].map((p,i)=>(
-              <div key={i} className="border border-stone-100 rounded-sm p-3.5 transition-all duration-500"
-                style={{
-                  borderColor: p.active ? (i===1?'#fde68a':'rgba(106,148,121,0.4)') : p.done ? 'rgba(106,148,121,0.25)' : '#f5f5f4',
-                  background:  p.active ? (i===1?'#fffbeb':'rgba(106,148,121,0.04)') : 'transparent',
-                }}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{
-                    background: p.done ? TC.sage : p.active ? (i===1?TC.amberBar:TC.sage) : '#d6d3d1',
-                    animation: p.active ? 'blink 1.4s infinite' : 'none',
-                    display:'inline-block',
-                  }}/>
-                  <span className="text-xs font-medium" style={{
-                    color: p.done ? TC.sage : p.active ? (i===1?'#92400e':TC.sage) : '#a8a29e',
-                  }}>{p.label}</span>
+          {/* Scenario preview / phase timeline */}
+          {!simScenario && (
+            <div className="grid sm:grid-cols-2 gap-3 mb-6">
+              <div className="border border-stone-100 rounded-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" style={{display:'inline-block'}}/>
+                  <span className="text-xs font-medium" style={{color:slateBlue}}>Viral Launch Scenario</span>
                 </div>
-                <p className="text-xs text-stone-400 leading-relaxed">{p.detail}</p>
+                <p className="text-xs text-stone-400 leading-relaxed">Edge spikes to 95k req/s · IP entropy stays HIGH (diverse sources) · Anomaly score stays LOW · Origin scales up safely to ~2.5k req/s</p>
               </div>
-            ))}
+              <div className="border border-stone-100 rounded-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:TC.amberBar, display:'inline-block'}}/>
+                  <span className="text-xs font-medium" style={{color:'#92400e'}}>Botnet DDoS Scenario</span>
+                </div>
+                <p className="text-xs text-stone-400 leading-relaxed">Edge spikes to 95k req/s · IP entropy DROPS (narrow botnet IPs) · Anomaly score breaches 0.60 · Origin shielded · NACL injected</p>
+              </div>
+            </div>
+          )}
+
+          {phaseCards && (
+            <div className={`grid gap-3 mb-6 ${phaseCards.length===2?'grid-cols-2':'grid-cols-3'}`}>
+              {phaseCards.map((p,i) => {
+                const pc = phaseCardColor(p);
+                return (
+                  <div key={i} className="border rounded-sm p-3.5 transition-all duration-500"
+                    style={{
+                      borderColor: p.active ? pc.active : p.done ? 'rgba(106,148,121,0.25)' : '#f5f5f4',
+                      background:  p.active ? pc.bg    : 'transparent',
+                    }}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{
+                        background: p.done ? TC.sage : p.active ? pc.dot : '#d6d3d1',
+                        animation: p.active ? 'blink 1.4s infinite' : 'none',
+                        display:'inline-block',
+                      }}/>
+                      <span className="text-xs font-medium" style={{
+                        color: p.done ? TC.sage : p.active ? pc.text : '#a8a29e',
+                      }}>{p.label}</span>
+                    </div>
+                    <p className="text-xs text-stone-400 leading-relaxed">{p.detail}</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Two scenario buttons */}
+          <div className="flex flex-wrap items-center gap-3">
+            <button onClick={launchFlashCrowd} disabled={simScenario !== null}
+              className="text-sm font-medium px-5 py-2.5 border rounded-sm transition-all duration-200"
+              style={{
+                borderColor: simScenario==='flashCrowd' ? '#cbd5e1' : simScenario!==null ? '#e7e5e4' : slateBlue,
+                color:       simScenario==='flashCrowd' ? slateBlue  : simScenario!==null ? '#a8a29e' : slateBlue,
+                background:  simScenario==='flashCrowd' ? 'rgba(71,85,105,0.04)' : 'transparent',
+                cursor:      simScenario!==null ? 'not-allowed' : 'pointer',
+              }}>
+              {simScenario==='flashCrowd' ? 'Viral Launch in progress…' : 'Simulate Viral Launch (Flash Crowd)'}
+            </button>
+
+            <button onClick={launchBotnet} disabled={simScenario !== null}
+              className="text-sm font-medium px-5 py-2.5 border rounded-sm transition-all duration-200"
+              style={{
+                borderColor: simScenario==='botnet' && phase==='breach' ? '#fde68a' : simScenario==='botnet' ? '#d6d3d1' : simScenario!==null ? '#e7e5e4' : '#1c1917',
+                color:       simScenario==='botnet' && phase==='breach' ? '#92400e' : simScenario==='botnet' ? '#a8a29e' : simScenario!==null ? '#a8a29e' : '#1c1917',
+                background:  simScenario==='botnet' && phase==='breach' ? '#fffbeb' : 'transparent',
+                cursor:      simScenario!==null ? 'not-allowed' : 'pointer',
+              }}>
+              {simScenario==='botnet' && phase==='breach'     ? 'Botnet Attack in progress…'
+               : simScenario==='botnet' && phase==='mitigating' ? '✓ Threat neutralized'
+               : 'Simulate Botnet (DDoS Attack)'}
+            </button>
+
+            {simScenario !== null && (
+              <button onClick={resetSim} className="text-sm text-stone-400 hover:text-stone-700 transition-colors underline underline-offset-2">
+                Reset
+              </button>
+            )}
           </div>
         </div>
 
-        {/* ── NACL Rules (mitigating only) ── */}
+        {/* ── NACL Rules (botnet mitigating only) ── */}
         {naclRules.length > 0 && (
           <div className="card overflow-hidden mb-5 fade-up">
             <div className="px-5 py-3.5 border-b border-stone-100 flex items-center justify-between">
@@ -1065,6 +1200,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
                 <span className="text-xs leading-relaxed transition-colors" style={{
                   color: e.type==='alert'   ? '#92400e'
                        : e.type==='success' ? TC.sage
+                       : e.type==='info' && simScenario==='flashCrowd' ? slateBlue
                        : '#78716c'
                 }}>{e.msg}</span>
               </div>
@@ -1076,6 +1212,8 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
     </div>
   );
 };
+
+
 
 /* ═══════════════════════════════════════════════════════════
    APP ROOT

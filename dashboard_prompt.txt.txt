@@ -1,0 +1,42 @@
+Act as an Expert UI/UX Designer and Frontend React Developer. We need to complete the storytelling of our Model A (Reverse Proxy) SaaS product by building a highly detailed, interactive "Tenant Dashboard" that acts as a live simulation of the Project Aegis firewall.
+
+Please update the React Artifact to include this new Dashboard view. 
+
+**Strict Design Constraint:** Maintain the Anthropic-inspired aesthetic (stone-50 background, stone-800/900 text, flat minimalist components, Serif headings, Sans-serif body). Do not use hacker neon colors or heavy shadows.
+
+### 1. Application Flow Update
+*   After the "Get Protected" DNS propagation step succeeds, automatically transition the user to the `Dashboard` view.
+*   The Dashboard header should display the user's account name (Somraj Sarkar) and the active demo domain (e.g., `api.demo-tenant.com`).
+
+### 2. The Dashboard Layout (Minimalist Telemetry)
+Create a clean grid layout featuring three primary metric cards:
+*   **Edge Ingestion Rate:** The raw traffic hitting the Aegis SQS buffer.
+*   **AI Anomaly Score:** A gauge or number from 0.00 to 1.00 (Threshold: 0.60).
+*   **Origin Server Load:** The clean traffic successfully forwarded to the client's actual server.
+
+### 3. The Live Attack Simulation (The Core Demo)
+Below the metrics, create a "Stress Test Network" section. This is for presentation purposes to show the system working in real-time. Include a minimalist "Launch Volumetric Attack" button.
+
+Use React `useEffect` and `setInterval` to manage three distinct states of the simulation when the button is clicked:
+
+*   **Phase 1: Nominal Baseline (0-3 seconds)**
+    *   Edge Ingestion: Fluctuating around 300 - 450 req/s.
+    *   Anomaly Score: Hovering around 0.12 - 0.18.
+    *   Origin Load: Matches Edge Ingestion (300 - 450 req/s).
+    *   Status Text: "System Nominal. Forwarding clean traffic."
+
+*   **Phase 2: Volumetric Breach (3-6 seconds)**
+    *   Edge Ingestion: Instantly spikes to 85,000+ req/s.
+    *   Anomaly Score: Rapidly climbs and breaches the 0.60 threshold, maxing out at ~0.92.
+    *   Origin Load: Starts to climb slightly (e.g., 600 req/s) but NEVER spikes.
+    *   Status Text: "Anomalous surge detected. SQS Buffer expanding. AI evaluating..." (Change text color to a muted amber).
+
+*   **Phase 3: Autonomous Mitigation (6+ seconds)**
+    *   Edge Ingestion: Drops to 0 for the attacking IPs, overall rate returns to ~400 req/s.
+    *   Anomaly Score: Resets to ~0.15.
+    *   Origin Load: Remains completely stable at ~400 req/s.
+    *   Status Text: "Threat Isolated. Boto3 NACL Rule Injected. Network Secured." (Change text color to a soft sage green).
+
+### 4. Visual Execution
+*   Use simple, elegant visual indicators (like thin progressive loading bars or smoothly animating numbers) for the metrics rather than complex chart libraries, keeping the code self-contained in the Artifact.
+*   Ensure the transition from Login -> Onboarding -> Dashboard -> Simulation is seamless.

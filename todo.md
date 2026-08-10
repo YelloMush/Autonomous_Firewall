@@ -45,3 +45,23 @@ Transitioning Project Aegis from a standalone academic project into a commercial
 - [ ] Test the live `simulate_attack.py` script against the current EC2 sensor to ensure reliable metric spikes.
 - [ ] Rehearse the narrative: Use the "Scout, Buffer, Detective, Bouncer" analogies.
 - [ ] Ensure `reset_nacl.py` works flawlessly so the demo can be run multiple times.
+
+---
+
+## 🚦 Phase 4: Nuanced Traffic Analysis (Surge vs. Attack)
+**Objective:** Expand the narrative and technical capability to differentiate between legitimate "Flash Crowds" (e.g., sudden viral traffic, product launches) and malicious volumetric attacks.
+*   Instead of just terming all high-volume traffic as "malicious," we need to articulate how the system handles a legitimate surge.
+*   **Action Items:**
+    - [ ] Define the behavior of the SQS buffer during a legitimate flash crowd (auto-scaling without triggering NACL drops).
+    - [ ] Tune the Isolation Forest features (e.g., Shannon entropy of IP distributions) so the AI can distinguish between 100,000 requests from diverse, legitimate IPs vs. a botnet flood.
+    - [ ] Add a visual state to the dashboard for "High Load / Benign Surge" where the buffer expands but the threat score stays low.
+
+---
+
+## 🔍 Phase 5: System Flaws, Drawbacks, and Loopholes
+**Objective:** Be intellectually honest about the limitations of Project Aegis to anticipate questions from professors/investigators and guide future iterations.
+*   **Action Items:**
+    - [ ] **Cost Loopholes:** Document the risk of AWS bills spiking if the SQS queue absorbs a massive Layer 7 flood before the AI can drop the IPs.
+    - [ ] **False Positives:** Detail what happens if the AI accidentally blocks a legitimate major ISP gateway (collateral damage).
+    - [ ] **Layer 7 Complexity:** Acknowledge that while we handle volumetric floods (Layer 3/4), sophisticated application-layer attacks (Layer 7 HTTP floods that mimic human behavior perfectly) might bypass the current 5-feature Isolation Forest model.
+    - [ ] **Latency Overheads:** Document the inherent latency introduced by routing all packets through an SQS queue and AI inference layer before reaching the origin.
