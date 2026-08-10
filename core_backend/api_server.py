@@ -321,6 +321,8 @@ async def anomaly_detection_loop():
     print("PHASE 2: CALIBRATION COMPLETE. AI IS NOW ARMED.")
     print(f"[*] Anomaly threshold: > {threshold:.1f} packets / {ai_engine.window_size}s window")
     print("=" * 45 + "\n")
+    
+    await manager.broadcast({"type": "alert", "message": "Calibration complete. AI Core armed and monitoring."})
 
     # ── Live detection ──────────────────────────────────────────────────────
     circuit_breaker_active = False
