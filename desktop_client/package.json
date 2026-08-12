@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "framer-motion": "^13.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.12.7"
@@ -30,14 +31,39 @@
     "appId": "com.aegis.enterprise",
     "productName": "Aegis Enterprise",
     "asar": true,
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "electron/**/*"],
-    "extraResources": [
-      { "from": "../core_backend", "to": "core_backend", "filter": ["**/*"] },
-      { "from": "../tests", "to": "tests", "filter": ["**/*"] }
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
     ],
-    "win": { "target": "nsis", "icon": "assets/icon.ico" },
-    "mac": { "target": "dmg", "icon": "assets/icon.icns" },
-    "linux": { "target": "AppImage" }
+    "extraResources": [
+      {
+        "from": "../core_backend",
+        "to": "core_backend",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../tests",
+        "to": "tests",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }

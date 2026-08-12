@@ -76,8 +76,7 @@ export default function ToolsTab() {
             style={{
               display:'flex', flexDirection:'column', gap:2, padding:'7px 8px', textAlign:'left',
               background: selected===t.id ? 'var(--bg-subtle)' : 'transparent',
-              borderLeft: `2px solid ${selected===t.id ? t.colour : 'transparent'}`,
-              borderBottom:'1px solid var(--border)', border:'none',
+              border:'none',
               borderLeft: `2px solid ${selected===t.id ? t.colour : 'transparent'}`,
               borderBottom:'1px solid var(--border)',
               cursor:'pointer', color:'var(--text-primary)', transition:'background 0.1s',
