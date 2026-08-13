@@ -334,7 +334,7 @@ const Nav = ({user,onSignIn,onSignOut,onLogoClick,onDashboard,dark,onToggleDark}
           ) : (
             <>
               <button onClick={onSignIn} className="hidden sm:block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors">Sign in</button>
-              <a href="/download" className="text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-4 py-2 rounded-sm hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">Download Aegis for PC</a>
+              <a href="download.html" className="text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-4 py-2 rounded-sm hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">Download Aegis for PC</a>
             </>
           )}
         </div>
@@ -358,7 +358,7 @@ const Hero = ({user,onDashboard}) => (
             Go to Dashboard <ArrowIco/>
           </button>
         ) : (
-          <a href="/download" className="inline-flex items-center gap-2 text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-6 py-3 rounded-sm hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">
+          <a href="download.html" className="inline-flex items-center gap-2 text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-6 py-3 rounded-sm hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">
             Download Aegis for PC <ArrowIco/>
           </a>
         )}
@@ -608,7 +608,7 @@ const CTA = ({user,onDashboard}) => (
             Go to Dashboard <ArrowIco/>
           </button>
         ) : (
-          <a href="/download" className="inline-flex items-center gap-2 text-sm font-medium bg-stone-50 text-stone-900 px-7 py-3.5 rounded-sm hover:bg-white transition-colors">
+          <a href="download.html" className="inline-flex items-center gap-2 text-sm font-medium bg-stone-50 text-stone-900 px-7 py-3.5 rounded-sm hover:bg-white transition-colors">
             Download Aegis for PC <ArrowIco/>
           </a>
         )}
@@ -635,7 +635,7 @@ const Footer = ({onSignIn}) => (
       <div className="flex gap-14">
         <div>
           <div className="text-xs uppercase tracking-widest text-stone-400 mb-3">Product</div>
-          <a href="/download" className="block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors mb-2">Download for PC</a>
+          <a href="download.html" className="block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors mb-2">Download for PC</a>
           <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors mb-2">GitHub</a>
           <button onClick={onSignIn} className="block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors mb-2 text-left">Sign In</button>
         </div>
