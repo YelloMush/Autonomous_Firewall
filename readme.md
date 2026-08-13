@@ -381,4 +381,4 @@ pip install -r requirements.txt
 | `main` | Stable releases |
 | `user-interface-updates` | Active development — Model A UI, Tenant Dashboard, Control Plane |
 
-Current active release: **`v0.0.1`** — First public user-testing build.
+Current active release: **`v0.1.00`** — First public user-testing build.

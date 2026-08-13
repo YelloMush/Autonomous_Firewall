@@ -1,6 +1,6 @@
 {
   "name": "aegis-desktop",
-  "version": "1.0.0",
+  "version": "0.1.00",
   "description": "Project Aegis Model B - AWS IaC Enterprise Desktop Client",
   "main": "electron/main.js",
   "scripts": {
