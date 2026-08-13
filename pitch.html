@@ -5,13 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aegis — Deploy enterprise AI defense directly into your AWS VPC.</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' };</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;}
-  body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:#fafaf9;color:#1c1917;margin:0;}
+  :root{
+    --bg-app:#fafaf9; --bg-surface:#ffffff; --bg-subtle:#f5f5f4;
+    --text-primary:#1c1917; --text-muted:#78716c; --text-faint:#a8a29e;
+    --border:#e7e5e4; --border-mid:#d6d3d1;
+  }
+  html.dark{
+    --bg-app:#0c0a09; --bg-surface:#1c1917; --bg-subtle:#292524;
+    --text-primary:#e7e5e4; --text-muted:#a8a29e; --text-faint:#78716c;
+    --border:#292524; --border-mid:#44403c;
+  }
+  body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-app);color:var(--text-primary);margin:0;transition:background .2s,color .2s;}
   .serif{font-family:'Playfair Display',Georgia,serif;}
   h1,h2,h3{font-family:'Playfair Display',Georgia,serif;}
   @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
@@ -24,21 +35,21 @@
   .modal-bd{animation:fadeIn .18s ease-out both;}
   .modal-cd{animation:slideUp .22s ease-out both;}
   .pipe-dot{position:absolute;border-radius:50%;pointer-events:none;}
-  ::selection{background:#e7e5e4;}
+  ::selection{background:var(--border);}
   ::-webkit-scrollbar{width:5px;}
-  ::-webkit-scrollbar-track{background:#fafaf9;}
-  ::-webkit-scrollbar-thumb{background:#d6d3d1;border-radius:2px;}
+  ::-webkit-scrollbar-track{background:var(--bg-app);}
+  ::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:2px;}
   input:focus{outline:none;}
-  .fi{width:100%;border:1px solid #e7e5e4;padding:12px 14px;font-size:14px;font-family:inherit;background:#fff;border-radius:2px;transition:border-color .15s;}
-  .fi:focus{border-color:#78716c;}
-  .fi:disabled{background:#fafaf9;color:#a8a29e;}
-  .pb{display:flex;width:100%;padding:12px;font-size:14px;font-weight:500;background:#1c1917;color:#fafaf9;border:none;border-radius:2px;cursor:pointer;transition:background .15s;font-family:inherit;align-items:center;justify-content:center;gap:8px;}
-  .pb:hover:not(:disabled){background:#44403c;}
-  .pb:disabled{background:#d6d3d1;cursor:not-allowed;}
-  .pbo{background:transparent;color:#1c1917;border:1px solid #e7e5e4;}
-  .pbo:hover:not(:disabled){background:#f5f5f4;}
-  .card{border:1px solid #e7e5e4;border-radius:2px;background:#fff;}
-  .metric-bar{position:relative;height:2px;background:#f5f5f4;border-radius:9999px;}
+  .fi{width:100%;border:1px solid var(--border);padding:12px 14px;font-size:14px;font-family:inherit;background:var(--bg-surface);color:var(--text-primary);border-radius:2px;transition:border-color .15s;}
+  .fi:focus{border-color:var(--text-muted);}
+  .fi:disabled{background:var(--bg-app);color:var(--text-faint);}
+  .pb{display:flex;width:100%;padding:12px;font-size:14px;font-weight:500;background:var(--text-primary);color:var(--bg-app);border:none;border-radius:2px;cursor:pointer;transition:background .15s;font-family:inherit;align-items:center;justify-content:center;gap:8px;}
+  .pb:hover:not(:disabled){opacity:.82;}
+  .pb:disabled{background:var(--border-mid);cursor:not-allowed;}
+  .pbo{background:transparent;color:var(--text-primary);border:1px solid var(--border);}
+  .pbo:hover:not(:disabled){background:var(--bg-subtle);}
+  .card{border:1px solid var(--border);border-radius:2px;background:var(--bg-surface);}
+  .metric-bar{position:relative;height:2px;background:var(--bg-subtle);border-radius:9999px;}
   .metric-bar-fill{position:absolute;height:100%;border-radius:9999px;transition:width .12s linear;}
 </style>
 </head>
@@ -50,8 +61,25 @@ const { useState, useEffect, useRef, useCallback } = React;
 /* ── API base ── */
 const API_BASE = 'http://localhost:8001';
 
-/* ── Brand colours ── */
+/* ── Brand colours (theme-invariant — status/accent colors read the same in light and dark) ── */
 const TC = { normal:'#7499B4', attack:'#B36A55', sage:'#6A9479', amber:'#92400e', amberBar:'#b45309' };
+
+/* ── Dark mode ── */
+function useDarkMode() {
+  const [dark, setDark] = useState(() => localStorage.getItem('aegis-web-theme') === 'dark');
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('aegis-web-theme', dark ? 'dark' : 'light');
+  }, [dark]);
+  return [dark, () => setDark(d => !d)];
+}
+
+const ThemeToggle = ({ dark, onToggle, cls = '' }) => (
+  <button onClick={onToggle} aria-label="Toggle theme"
+    className={`w-8 h-8 flex items-center justify-center rounded-sm text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors ${cls}`}>
+    {dark ? '☀' : '☽'}
+  </button>
+);
 
 /* ─────────────────── ICONS ─────────────────── */
 const Ico = ({d,cls='w-full h-full',sw=1.5,fill='none'}) => (
@@ -79,48 +107,186 @@ const Modal = ({onClose,children}) => (
   <div className="modal-bd fixed inset-0 z-50 flex items-center justify-center p-4"
     style={{background:'rgba(28,25,23,0.45)',backdropFilter:'blur(4px)'}}
     onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-    <div className="modal-cd bg-stone-50 border border-stone-200 rounded-sm w-full max-w-md relative">
+    <div className="modal-cd bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm w-full max-w-md relative max-h-[90vh] overflow-y-auto">
       {children}
     </div>
   </div>
 );
 
-/* ─────────────────── SIGN IN MODAL ─────────────────── */
-const SignInModal = ({onClose,onSignIn}) => {
-  const [email,setEmail] = useState('');
-  const [pass,setPass]   = useState('');
-  const [busy,setBusy]   = useState(false);
-  const handleGoogle = () => { setBusy(true); setTimeout(onSignIn,900); };
-  const handleSubmit = e => { e.preventDefault(); if(!email||!pass) return; setBusy(true); setTimeout(onSignIn,1100); };
+/* ─────────────────── AUTH (real backend — /api/auth/* on the FastAPI Aegis Core) ───────────────────
+   Accounts are stored server-side in the shared SQLite database, so a user who signs up here can log
+   straight into the desktop client (and vice versa) without creating a second account. localStorage is
+   only used to remember which already-authenticated user this browser last was, for UI convenience. */
+const AUTH_API_BASE = 'http://localhost:8000';
+const AUTH_SESSION_KEY = 'aegis-auth-session';
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
+const NETWORK_ERROR = { ok:false, error:'Could not reach the Aegis server. Is the backend running on :8000?' };
+
+async function apiSignUp({ name, email, password, tier }) {
+  try {
+    const res = await fetch(`${AUTH_API_BASE}/api/auth/signup`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, tier }),
+    });
+    return await res.json();
+  } catch (_) { return NETWORK_ERROR; }
+}
+async function apiSignIn({ email, password }) {
+  try {
+    const res = await fetch(`${AUTH_API_BASE}/api/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    return await res.json();
+  } catch (_) { return NETWORK_ERROR; }
+}
+async function apiLookup(email) {
+  try {
+    const res = await fetch(`${AUTH_API_BASE}/api/auth/lookup?email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    return !!data.exists;
+  } catch (_) { return false; }
+}
+
+function useAuth() {
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY)); } catch (_) { return null; }
+  });
+
+  const persist = (u) => {
+    setUser(u);
+    try { localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(u)); } catch (_) {}
+  };
+
+  const signUp = useCallback(async ({ name, email, password, tier }) => {
+    const result = await apiSignUp({ name, email, password, tier });
+    if (result.ok) persist(result.user);
+    return result;
+  }, []);
+
+  const signIn = useCallback(async ({ email, password }) => {
+    const result = await apiSignIn({ email, password });
+    if (result.ok) persist(result.user);
+    return result;
+  }, []);
+
+  const signOut = useCallback(() => {
+    try { localStorage.removeItem(AUTH_SESSION_KEY); } catch (_) {}
+    setUser(null);
+  }, []);
+
+  return { user, signIn, signUp, signOut, lookupEmail: apiLookup };
+}
+
+/* ─────────────────── AUTH MODAL — tabs, live existing-email detection, tier selection ─────────────────── */
+const AuthModal = ({ onClose, onAuthed, lookupEmail, signIn, signUp }) => {
+  const [tab, setTab] = useState('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [tier, setTier] = useState('shield');
+  const [error, setError] = useState('');
+  const [switched, setSwitched] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [knownUser, setKnownUser] = useState(false);
+
+  useEffect(() => {
+    const trimmed = email.trim();
+    if (!EMAIL_RE.test(trimmed)) { setKnownUser(false); return; }
+    let cancelled = false;
+    const t = setTimeout(() => {
+      lookupEmail(trimmed).then(exists => { if (!cancelled) setKnownUser(exists); });
+    }, 250);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [email, lookupEmail]);
+
+  useEffect(() => {
+    if (!EMAIL_RE.test(email.trim())) { setSwitched(null); return; }
+    if (knownUser && tab !== 'signin') { setTab('signin'); setSwitched('Welcome back — this email already has an account.'); }
+    else if (!knownUser && tab !== 'signup') { setTab('signup'); setSwitched('New email — let’s set up your account.'); }
+    else setSwitched(null);
+  }, [knownUser]); // eslint-disable-line
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!EMAIL_RE.test(email.trim())) { setError('Enter a valid email address.'); return; }
+    setBusy(true);
+    const result = tab === 'signin' ? await signIn({ email, password }) : await signUp({ name, email, password, tier });
+    setBusy(false);
+    if (!result.ok) { setError(result.error); return; }
+    onAuthed?.();
+    onClose();
+  };
+
   return (
     <Modal onClose={onClose}>
-      <div className="p-8">
-        <button onClick={onClose} className="absolute top-5 right-5 w-5 h-5 text-stone-400 hover:text-stone-700 transition-colors"><CloseIco/></button>
-        <div className="flex items-center gap-2 mb-7"><div className="w-4 h-4 text-stone-700"><ShieldIco/></div><span className="text-sm font-semibold text-stone-900">Aegis</span></div>
-        <h2 className="serif text-2xl font-medium text-stone-900 mb-1">Welcome back.</h2>
-        <p className="text-sm text-stone-500 mb-7">Sign in to your Aegis account.</p>
-        <button onClick={handleGoogle} disabled={busy} className="pb pbo mb-5 w-full" style={{border:'1px solid #e7e5e4'}}>
-          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          Continue with Google
-        </button>
-        <div className="flex items-center gap-3 mb-5"><div className="flex-1 h-px bg-stone-200"/><span className="text-xs text-stone-400">or</span><div className="flex-1 h-px bg-stone-200"/></div>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4"><label className="block text-xs text-stone-500 mb-1.5">Email address</label><input type="email" className="fi" placeholder="you@company.com" value={email} onChange={e=>setEmail(e.target.value)} autoFocus disabled={busy}/></div>
-          <div className="mb-6"><label className="block text-xs text-stone-500 mb-1.5">Password</label><input type="password" className="fi" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} disabled={busy}/></div>
-          <button type="submit" className="pb" disabled={busy||!email||!pass}>{busy?'Signing in…':'Sign in'}</button>
-        </form>
+      <button onClick={onClose} className="absolute top-5 right-5 w-5 h-5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"><CloseIco/></button>
+      <div className="flex border-b border-stone-200 dark:border-stone-800">
+        {['signin','signup'].map(t => (
+          <button key={t} onClick={()=>setTab(t)}
+            className={`flex-1 py-4 text-sm font-medium transition-colors border-b-2 ${tab===t?'border-stone-900 dark:border-stone-100 text-stone-900 dark:text-stone-100':'border-transparent text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}>
+            {t==='signin' ? 'Sign In' : 'Create Account'}
+          </button>
+        ))}
       </div>
+      <form onSubmit={submit} className="p-8">
+        <div className="flex items-center gap-2 mb-5"><div className="w-4 h-4 text-stone-700 dark:text-stone-300"><ShieldIco/></div><span className="text-sm font-semibold text-stone-900 dark:text-stone-100">Aegis</span></div>
+        <h2 className="serif text-2xl font-medium text-stone-900 dark:text-stone-100 mb-1">{tab==='signin' ? 'Welcome back.' : 'Create your account.'}</h2>
+        <p className="text-sm text-stone-500 dark:text-stone-400 mb-6">{tab==='signin' ? 'Sign in to your Aegis account.' : 'Choose a tier and you’re in.'}</p>
+
+        {switched && <div className="text-xs text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-sm px-3 py-2 mb-5">{switched}</div>}
+
+        <div className="mb-4">
+          <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1.5">Email address</label>
+          <input type="email" className="fi" placeholder="you@company.com" value={email} onChange={e=>setEmail(e.target.value)} autoFocus disabled={busy}/>
+        </div>
+
+        {tab === 'signup' && (
+          <div className="mb-4">
+            <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1.5">Full name</label>
+            <input className="fi" placeholder="Ada Lovelace" value={name} onChange={e=>setName(e.target.value)} disabled={busy}/>
+          </div>
+        )}
+
+        <div className="mb-4">
+          <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1.5">Password</label>
+          <input type="password" className="fi" placeholder={tab==='signup' ? 'At least 6 characters' : '••••••••'} value={password} onChange={e=>setPassword(e.target.value)} disabled={busy}/>
+        </div>
+
+        {tab === 'signup' && (
+          <div className="mb-6">
+            <label className="block text-xs text-stone-500 dark:text-stone-400 mb-2">Tier</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id:'shield', label:'Aegis Shield', desc:'Individual · edge proxy' },
+                { id:'enterprise', label:'Aegis Enterprise', desc:'Private VPC · IaC' },
+              ].map(o=>(
+                <button key={o.id} type="button" onClick={()=>setTier(o.id)}
+                  className={`text-left rounded-sm p-3 border transition-colors ${tier===o.id?'border-stone-900 dark:border-stone-100 bg-stone-50 dark:bg-stone-800':'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800'}`}>
+                  <div className="text-xs font-semibold text-stone-800 dark:text-stone-200">{o.label}</div>
+                  <div className="text-xs text-stone-400 dark:text-stone-500">{o.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {error && <div className="text-xs text-red-600 dark:text-red-400 mb-4">{error}</div>}
+
+        <button type="submit" className="pb" disabled={busy || !email || !password}>
+          {busy ? (tab==='signin' ? 'Signing in…' : 'Creating account…') : (tab==='signin' ? 'Sign in' : 'Create account')}
+        </button>
+      </form>
     </Modal>
   );
 };
 
 /* ─────────────────── NAV ─────────────────── */
-const Nav = ({isLoggedIn,onSignIn,onSignOut,onProtect,onDashboard}) => {
+const initials = (name) => name.trim().split(/\s+/).slice(0,2).map(p=>p[0]?.toUpperCase()).join('') || '?';
+
+const Nav = ({user,onSignIn,onSignOut,onLogoClick,onDashboard,dark,onToggleDark}) => {
   const [solid,setSolid]       = useState(false);
   const [acctOpen,setAcctOpen] = useState(false);
   useEffect(()=>{
@@ -128,47 +294,47 @@ const Nav = ({isLoggedIn,onSignIn,onSignOut,onProtect,onDashboard}) => {
     window.addEventListener('scroll',h); return ()=>window.removeEventListener('scroll',h);
   },[]);
   return (
-    <nav className={`fixed top-0 inset-x-0 z-40 transition-all duration-300 ${solid?'bg-stone-50/96 backdrop-blur-md border-b border-stone-200':'bg-transparent'}`}>
+    <nav className={`fixed top-0 inset-x-0 z-40 transition-all duration-300 ${solid?'bg-stone-50/96 dark:bg-stone-950/96 backdrop-blur-md border-b border-stone-200 dark:border-stone-800':'bg-transparent'}`}>
       <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-4 h-4 text-stone-700"><ShieldIco/></div>
-          <span className="text-sm font-semibold tracking-tight text-stone-900">Aegis</span>
-          <span className="ml-1 text-xs text-stone-400 border border-stone-200 px-2 py-0.5 rounded-full">Model B</span>
-        </div>
-        <div className="hidden md:flex gap-8 text-sm text-stone-500">
+        <button onClick={onLogoClick} className="flex items-center gap-2.5">
+          <div className="w-4 h-4 text-stone-700 dark:text-stone-300"><ShieldIco/></div>
+          <span className="text-sm font-semibold tracking-tight text-stone-900 dark:text-stone-100">Aegis</span>
+        </button>
+        <div className="hidden md:flex gap-8 text-sm text-stone-500 dark:text-stone-400">
           {[['#how','How it works'],['#simulator','Simulator'],['#research','Research']].map(([h,l])=>(
-            <a key={h} href={h} className="hover:text-stone-900 transition-colors">{l}</a>
+            <a key={h} href={h} className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors">{l}</a>
           ))}
         </div>
         <div className="flex items-center gap-3">
-          {isLoggedIn ? (
+          <ThemeToggle dark={dark} onToggle={onToggleDark}/>
+          {user ? (
             <>
               <div className="relative">
-                <button onClick={()=>setAcctOpen(o=>!o)} className="hidden sm:flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 transition-colors py-1 px-1 rounded-sm">
-                  <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-700 flex-shrink-0">S</div>
-                  <span className="font-medium">Somraj Sarkar</span>
+                <button onClick={()=>setAcctOpen(o=>!o)} className="hidden sm:flex items-center gap-2 text-sm text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 transition-colors py-1 px-1 rounded-sm">
+                  <div className="w-6 h-6 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center text-xs font-bold text-stone-700 dark:text-stone-200 flex-shrink-0">{initials(user.name)}</div>
+                  <span className="font-medium">{user.name}</span>
                   <ChevIco cls="w-3.5 h-3.5 text-stone-400"/>
                 </button>
                 {acctOpen && (
                   <>
                     <div className="fixed inset-0 z-30" onClick={()=>setAcctOpen(false)}/>
-                    <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-stone-200 rounded-sm shadow-sm z-40 overflow-hidden">
-                      <div className="px-4 py-3 border-b border-stone-100">
-                        <div className="text-xs font-semibold text-stone-800">Somraj Sarkar</div>
-                        <div className="text-xs text-stone-400 mt-0.5">somraj@example.com</div>
+                    <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-sm shadow-sm z-40 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-stone-100 dark:border-stone-800">
+                        <div className="text-xs font-semibold text-stone-800 dark:text-stone-200">{user.name}</div>
+                        <div className="text-xs text-stone-400 mt-0.5">{user.email}</div>
+                        <div className="text-xs text-stone-400 mt-1">{user.tier==='enterprise'?'Aegis Enterprise':'Aegis Shield'}</div>
                       </div>
-                      <button className="block w-full text-left px-4 py-2.5 text-sm text-stone-600 hover:bg-stone-50 transition-colors">Account settings</button>
-                      <button onClick={()=>{setAcctOpen(false);onSignOut();}} className="block w-full text-left px-4 py-2.5 text-sm text-stone-600 hover:bg-stone-50 transition-colors border-t border-stone-100">Sign out</button>
+                      <button onClick={()=>{setAcctOpen(false);onSignOut();}} className="block w-full text-left px-4 py-2.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">Sign out</button>
                     </div>
                   </>
                 )}
               </div>
-              <button onClick={onDashboard} className="text-sm font-medium bg-stone-900 text-stone-50 px-4 py-2 rounded-sm hover:bg-stone-700 transition-colors">Dashboard</button>
+              <button onClick={onDashboard} className="text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-4 py-2 rounded-sm hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">Go to Dashboard</button>
             </>
           ) : (
             <>
-              <button onClick={onSignIn} className="hidden sm:block text-sm text-stone-500 hover:text-stone-900 transition-colors">Sign in</button>
-              <button onClick={onProtect} className="text-sm font-medium bg-stone-900 text-stone-50 px-4 py-2 rounded-sm hover:bg-stone-700 transition-colors">Get protected</button>
+              <button onClick={onSignIn} className="hidden sm:block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors">Sign in</button>
+              <a href="/download" className="text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-4 py-2 rounded-sm hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">Download Aegis for PC</a>
             </>
           )}
         </div>
@@ -178,38 +344,44 @@ const Nav = ({isLoggedIn,onSignIn,onSignOut,onProtect,onDashboard}) => {
 };
 
 /* ─────────────────── HERO ─────────────────── */
-const Hero = ({onProtect}) => (
+const Hero = ({user,onDashboard}) => (
   <section id="hero" className="pt-36 pb-20 max-w-6xl mx-auto px-8">
     <div className="max-w-2xl fade-up">
-      <div className="text-xs uppercase tracking-widest text-stone-400 mb-7">IaC Deployment · Model B · 1-Click AWS VPC</div>
-      <h1 className="text-6xl md:text-7xl font-medium leading-tight tracking-tight text-stone-900 mb-7">
-        Deploy enterprise AI defense<br/><em className="text-stone-500">directly into your AWS VPC.</em>
+      <div className="text-xs uppercase tracking-widest text-stone-400 mb-7">AI-Powered · Autonomous · Two Ways to Deploy</div>
+      <h1 className="text-6xl md:text-7xl font-medium leading-tight tracking-tight text-stone-900 dark:text-stone-100 mb-7">
+        Stop DDoS attacks<br/><em className="text-stone-500 dark:text-stone-400">before they reach your server.</em>
       </h1>
-      <p className="text-lg text-stone-500 leading-loose font-light mb-10 max-w-lg">Grant Aegis a provisioning IAM role. We deploy our entire M/M/c queuing and Isolation Forest architecture inside your own cloud environment — via a single Terraform/CloudFormation template. Your data never leaves your VPC.</p>
+      <p className="text-lg text-stone-500 dark:text-stone-400 leading-loose font-light mb-10 max-w-lg">Aegis tells a legitimate traffic surge apart from a botnet flood in real time, using unsupervised anomaly detection — then blocks the attack automatically. Run it as a managed edge proxy in minutes, or deploy it as IaC inside your own AWS VPC.</p>
       <div className="flex flex-wrap gap-3">
-        <button onClick={onProtect} className="inline-flex items-center gap-2 text-sm font-medium bg-stone-900 text-stone-50 px-6 py-3 rounded-sm hover:bg-stone-700 transition-colors">
-          Deploy to my VPC <ArrowIco/>
-        </button>
-        <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-sm font-medium border border-stone-300 text-stone-700 px-6 py-3 rounded-sm hover:bg-stone-100 transition-colors">
+        {user ? (
+          <button onClick={onDashboard} className="inline-flex items-center gap-2 text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-6 py-3 rounded-sm hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">
+            Go to Dashboard <ArrowIco/>
+          </button>
+        ) : (
+          <a href="/download" className="inline-flex items-center gap-2 text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-6 py-3 rounded-sm hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors">
+            Download Aegis for PC <ArrowIco/>
+          </a>
+        )}
+        <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-sm font-medium border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 px-6 py-3 rounded-sm hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors">
           <div className="w-4 h-4"><GithubIco/></div>View on GitHub
         </a>
       </div>
     </div>
-    <div className="mt-16 border border-stone-200 bg-white rounded-sm p-7 max-w-2xl">
-      <div className="text-xs text-stone-400 tracking-widest uppercase mb-7">Deployment flow — inside your AWS VPC</div>
+    <div className="mt-16 border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 rounded-sm p-7 max-w-2xl">
+      <div className="text-xs text-stone-400 tracking-widest uppercase mb-7">Traffic pipeline — either tier</div>
       <div className="relative flex items-start justify-between">
-        <div className="absolute top-5 left-5 right-5 h-px bg-stone-200" style={{zIndex:0}}/>
+        <div className="absolute top-5 left-5 right-5 h-px bg-stone-200 dark:bg-stone-800" style={{zIndex:0}}/>
         {[
-          {icon:<NaclIco/>,label:'IAM Role ARN',sub:'1-time grant'},
-          {icon:<BoxIco/>,label:'SQS Buffers',sub:'Deployed in VPC'},
-          {icon:<BrainIco/>,label:'AI Core',sub:'EC2 + Isolation Forest'},
-          {icon:<ServerIco/>,label:'Your Server',sub:'Local clean pipe'},
+          {icon:<GlobeIco/>,label:'Edge Ingress',sub:'CNAME or VPC-internal'},
+          {icon:<BoxIco/>,label:'SQS Buffers',sub:'M/M/c shock absorption'},
+          {icon:<BrainIco/>,label:'AI Core',sub:'Isolation Forest'},
+          {icon:<ServerIco/>,label:'Your Server',sub:'Clean traffic only'},
         ].map((n,i)=>(
           <div key={i} className="relative z-10 flex flex-col items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-stone-50 border border-stone-300 flex items-center justify-center">
-              <div className="w-4 h-4 text-stone-500">{n.icon}</div>
+            <div className="w-10 h-10 rounded-full bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 flex items-center justify-center">
+              <div className="w-4 h-4 text-stone-500 dark:text-stone-400">{n.icon}</div>
             </div>
-            <div className="text-center"><div className="text-xs font-medium text-stone-700">{n.label}</div><div className="text-xs text-stone-400">{n.sub}</div></div>
+            <div className="text-center"><div className="text-xs font-medium text-stone-700 dark:text-stone-300">{n.label}</div><div className="text-xs text-stone-400">{n.sub}</div></div>
           </div>
         ))}
       </div>
@@ -219,11 +391,11 @@ const Hero = ({onProtect}) => (
 
 /* ─────────────────── STATS ─────────────────── */
 const Stats = () => (
-  <section className="border-y border-stone-200 bg-white">
+  <section className="border-y border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
     <div className="max-w-6xl mx-auto px-8 py-11 grid grid-cols-2 md:grid-cols-4">
-      {[{v:'1 Template',l:'Terraform / CloudFormation'},{v:'< 8 min',l:'Full VPC deployment time'},{v:'100%',l:'Data stays in your cloud'},{v:'Zero',l:'Egress to Aegis servers'}].map((s,i)=>(
-        <div key={i} className={`px-8 py-2 ${i>0?'border-l border-stone-200':''} ${i===0?'pl-0':''}`}>
-          <div className="serif text-3xl font-medium text-stone-900 mb-1">{s.v}</div>
+      {[{v:'2 Tiers',l:'Managed proxy or private VPC'},{v:'< 8 min',l:'Full deployment time'},{v:'0.60',l:'AI breach threshold'},{v:'Real-time',l:'Isolation Forest inference'}].map((s,i)=>(
+        <div key={i} className={`px-8 py-2 ${i>0?'border-l border-stone-200 dark:border-stone-800':''} ${i===0?'pl-0':''}`}>
+          <div className="serif text-3xl font-medium text-stone-900 dark:text-stone-100 mb-1">{s.v}</div>
           <div className="text-sm text-stone-400 leading-snug">{s.l}</div>
         </div>
       ))}
@@ -234,27 +406,35 @@ const Stats = () => (
 /* ─────────────────── HOW IT WORKS ─────────────────── */
 const HowItWorks = () => {
   const steps = [
-    {n:'01',tag:'IAM Role Grant',sub:'AWS STS · Zero standing access',analogy:'You hand us the keys — only for the time it takes to build.',body:'You create a cross-account IAM Role with least-privilege permissions and provide its ARN. Aegis assumes this role via AWS STS to provision resources inside your VPC, then immediately releases access. No long-lived credentials are stored.',tech:'AWS IAM · STS AssumeRole · Least-privilege'},
-    {n:'02',tag:'1-Click IaC Deployment',sub:'Terraform / CloudFormation · Automated',analogy:'An entire security stack materialises in your cloud in minutes.',body:'Our Terraform template deploys SQS ingestion queues, EC2 edge sensor nodes, and the AI core into your existing VPC. Everything runs in your own AWS account, in your chosen region — we never see your traffic.',tech:'Terraform · AWS CloudFormation · VPC subnets'},
-    {n:'03',tag:'The In-VPC AI Core',sub:'Isolation Forest · EC2 · Real-time inference',analogy:'Your own guard dog — trained by us, housed by you.',body:'The deployed EC2 fleet runs our pre-trained Isolation Forest model. It evaluates every SQS-buffered request batch in real time, calculating Shannon Entropy to distinguish Flash Crowds from Botnets — without signature databases.',tech:'Scikit-Learn · FastAPI · EC2 · Auto Scaling'},
-    {n:'04',tag:'The Local Clean Pipe',sub:'VPC-internal routing · No external egress',analogy:'Clean traffic never leaves your private network.',body:'Verified requests are forwarded directly to your origin through VPC-internal routing. No traffic touches Aegis servers. NACL rules injected by our Boto3 automation block confirmed malicious IP ranges at the AWS network layer.',tech:'AWS NACL · Boto3 · VPC routing · TLS'},
+    {n:'01',icon:<BoxIco/>,tag:'Traffic Ingestion & SQS Shock Absorption',analogy:'A shock absorber for your origin server — spikes hit us first, never you.',
+     body:'Every incoming packet hits Aegis’ edge buffers before it ever reaches your origin. We model ingestion using M/M/c queuing theory: a sudden spike in arrivals gets absorbed into cloud-managed SQS queues rather than overwhelming a fixed pool of origin workers. Your server sees a smooth, buffered stream — never the raw spike.',
+     tech:'M/M/c queuing theory · Amazon SQS · Auto-scaling consumers'},
+    {n:'02',icon:<BrainIco/>,tag:'AI Anomaly Detection & Entropy Scoring',analogy:'The AI asks one question: does this traffic look like people, or like a script?',
+     body:'An unsupervised Isolation Forest model scores every buffered batch in real time on packet velocity and source-IP diversity. We measure that diversity with Shannon entropy: a viral "flash crowd" of real visitors has high entropy (many distinct IPs); a botnet hitting from a narrow pool of compromised hosts collapses to low entropy. The AI tells the two apart automatically — no signatures, no manual rules.',
+     tech:'Isolation Forest · Shannon entropy H(x) · Scikit-learn'},
+    {n:'03',icon:<NaclIco/>,tag:'Autonomous Circuit Breaker',analogy:'The moment the AI is sure, the network itself closes the door.',
+     body:'Once the anomaly score crosses s ≥ 0.60, Aegis doesn’t wait for a human. A Boto3 automation script injects VPC Network ACL deny rules against the offending IP ranges within seconds — blocking malicious traffic at the AWS network layer while every already-verified clean request keeps flowing through untouched.',
+     tech:'Boto3 · AWS VPC NACL · Sub-second automated response'},
   ];
   return (
     <section id="how" className="py-24 max-w-6xl mx-auto px-8">
-      <div className="mb-16">
+      <div className="mb-16 max-w-2xl">
         <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">How it works</div>
-        <h2 className="text-4xl md:text-5xl font-medium text-stone-900 leading-tight tracking-tight max-w-lg">The Model B pipeline.</h2>
-        <p className="text-stone-500 text-base leading-relaxed mt-4 max-w-xl">A four-stage IaC deployment that grants, provisions, analyses, and protects — entirely within your AWS account.</p>
+        <h2 className="text-4xl md:text-5xl font-medium text-stone-900 dark:text-stone-100 leading-tight tracking-tight">Three stages. Milliseconds each.</h2>
+        <p className="text-stone-500 dark:text-stone-400 text-base leading-relaxed mt-4">From the first packet to a blocked attacker, entirely automated — no on-call engineer required.</p>
       </div>
-      <div className="grid md:grid-cols-2 gap-x-14 gap-y-12">
+      <div className="grid md:grid-cols-3 gap-6">
         {steps.map((p,i)=>(
-          <div key={i} className="border-t border-stone-200 pt-7">
+          <div key={i} className="border border-stone-200 dark:border-stone-800 rounded-sm p-6 bg-white dark:bg-stone-900 flex flex-col">
             <div className="flex items-start justify-between mb-5">
-              <div><div className="text-xs text-stone-400 tracking-widest uppercase mb-1">{p.tag}</div><div className="text-sm text-stone-400">{p.sub}</div></div>
-              <span className="serif text-5xl font-light text-stone-100 leading-none select-none">{p.n}</span>
+              <div className="w-9 h-9 rounded-full bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-600 dark:text-stone-300">
+                <div className="w-4 h-4">{p.icon}</div>
+              </div>
+              <span className="serif text-4xl font-light text-stone-100 dark:text-stone-800 leading-none select-none">{p.n}</span>
             </div>
-            <p className="text-sm text-stone-500 italic border-l-2 border-stone-200 pl-3 mb-4 leading-relaxed">"{p.analogy}"</p>
-            <p className="text-sm text-stone-600 leading-relaxed mb-5">{p.body}</p>
+            <div className="serif text-lg font-medium text-stone-900 dark:text-stone-100 leading-snug mb-3">{p.tag}</div>
+            <p className="text-sm text-stone-500 dark:text-stone-400 italic border-l-2 border-stone-200 dark:border-stone-700 pl-3 mb-4 leading-relaxed">"{p.analogy}"</p>
+            <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-5 flex-1">{p.body}</p>
             <span className="text-xs text-stone-400 font-mono">{p.tech}</span>
           </div>
         ))}
@@ -299,18 +479,18 @@ const Simulator = () => {
   const isAtk=phase===PH.ATTACK;
   const fmt=n=>n>=1000?`${(n/1000).toFixed(n>9999?0:1)}k`:String(n);
   return (
-    <section id="simulator" className="bg-white border-y border-stone-200 py-24">
+    <section id="simulator" className="bg-white dark:bg-stone-900 border-y border-stone-200 dark:border-stone-800 py-24">
       <div className="max-w-6xl mx-auto px-8">
         <div className="mb-12">
-          <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Model B — VPC-Internal Demonstration</div>
-          <h2 className="text-4xl md:text-5xl font-medium text-stone-900 leading-tight tracking-tight mb-4 max-w-xl">Your VPC never feels the storm.</h2>
-          <p className="text-stone-500 text-base leading-relaxed max-w-xl">Simulate a volumetric attack against your in-VPC Aegis stack. Watch the SQS buffer absorb and the AI core neutralise the flood — while your origin server remains completely uninterrupted, all inside your AWS account.</p>
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Live Demonstration</div>
+          <h2 className="text-4xl md:text-5xl font-medium text-stone-900 dark:text-stone-100 leading-tight tracking-tight mb-4 max-w-xl">Your server never feels the storm.</h2>
+          <p className="text-stone-500 dark:text-stone-400 text-base leading-relaxed max-w-xl">Simulate a volumetric attack against an Aegis-protected origin. Watch the SQS buffer absorb the flood and the AI core neutralise it in real time — while the origin server remains completely uninterrupted.</p>
         </div>
-        <div className="relative rounded-sm overflow-hidden mb-3" style={{height:'230px',border:'1px solid #e7e5e4'}}>
+        <div className="relative rounded-sm overflow-hidden mb-3" style={{height:'230px',border:'1px solid var(--border)'}}>
           <div className="absolute inset-0 flex pointer-events-none">
-            <div style={{width:'22%',borderRight:'1px solid #e7e5e4',background:'#fff'}}/>
-            <div style={{width:'56%',background:isAtk?'rgba(106,148,121,0.05)':'transparent',borderRight:`1px solid ${isAtk?'rgba(106,148,121,0.35)':'#e7e5e4'}`,transition:'background .9s,border-color .9s'}}/>
-            <div style={{width:'22%',background:'#fff'}}/>
+            <div style={{width:'22%',borderRight:'1px solid var(--border)',background:'var(--bg-surface)'}}/>
+            <div style={{width:'56%',background:isAtk?'rgba(106,148,121,0.05)':'transparent',borderRight:`1px solid ${isAtk?'rgba(106,148,121,0.35)':'var(--border)'}`,transition:'background .9s,border-color .9s'}}/>
+            <div style={{width:'22%',background:'var(--bg-surface)'}}/>
           </div>
           <div className="absolute top-0 inset-x-0 flex pointer-events-none" style={{zIndex:10}}>
             {[{w:'22%',icon:<GlobeIco/>,label:'Open Internet'},{w:'56%',icon:<ShieldIco/>,label:'Aegis Cloud Shield',active:isAtk},{w:'22%',icon:<ServerIco/>,label:'Your Origin',safe:isAtk}].map((n,i)=>(
@@ -330,21 +510,21 @@ const Simulator = () => {
         </div>
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           {[{label:'Aegis Ingestion',val:`${fmt(disp.aegisRate)} req/s`,sub:isAtk?'▲ Absorbing flood':'— Nominal',c:isAtk?TC.attack:'#a8a29e'},{label:'Client Server Load',val:`${disp.clientRate} req/s`,sub:isAtk?'✓ Stable — shielded':'— Nominal',c:isAtk?TC.sage:'#a8a29e'},{label:'Packets Neutralised',val:disp.absorbed.toLocaleString(),sub:isAtk?'Dropped in Aegis buffer':'— No active attack',c:'#a8a29e'}].map((m,i)=>(
-            <div key={i} className="border border-stone-200 rounded-sm p-5">
+            <div key={i} className="border border-stone-200 dark:border-stone-700 rounded-sm p-5">
               <div className="text-xs text-stone-400 uppercase tracking-widest mb-3">{m.label}</div>
-              <div className="serif text-3xl font-medium text-stone-900 mb-1.5">{m.val}</div>
+              <div className="serif text-3xl font-medium text-stone-900 dark:text-stone-100 mb-1.5">{m.val}</div>
               <div className="text-xs" style={{color:m.c,fontWeight:i<2&&isAtk?500:400}}>{m.sub}</div>
             </div>
           ))}
         </div>
-        <div className="flex items-center justify-between flex-wrap gap-4 pt-6 border-t border-stone-200">
+        <div className="flex items-center justify-between flex-wrap gap-4 pt-6 border-t border-stone-200 dark:border-stone-800">
           <div className={`flex items-start gap-2.5 max-w-sm transition-opacity duration-500 ${isAtk?'opacity-100':'opacity-0 pointer-events-none'}`}>
             <span className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{background:TC.sage,animation:isAtk?'blink 1.4s infinite':undefined}}/>
-            <div><div className="font-medium text-sm text-stone-700">Aegis is absorbing the attack.</div><div className="text-stone-400 text-xs mt-0.5 leading-relaxed">Malicious packets are trapped inside Aegis. Clean traffic continues uninterrupted.</div></div>
+            <div><div className="font-medium text-sm text-stone-700 dark:text-stone-300">Aegis is absorbing the attack.</div><div className="text-stone-400 text-xs mt-0.5 leading-relaxed">Malicious packets are trapped inside Aegis. Clean traffic continues uninterrupted.</div></div>
           </div>
           <div className="flex items-center gap-4">
-            {isAtk&&<button onClick={reset} className="text-sm text-stone-400 hover:text-stone-700 transition-colors underline underline-offset-2">Reset</button>}
-            <button onClick={simulate} disabled={isAtk} className={`text-sm font-medium px-5 py-2.5 rounded-sm border transition-colors ${isAtk?'border-stone-200 text-stone-300 cursor-not-allowed bg-stone-50':'border-stone-300 text-stone-700 hover:bg-stone-100'}`}>
+            {isAtk&&<button onClick={reset} className="text-sm text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors underline underline-offset-2">Reset</button>}
+            <button onClick={simulate} disabled={isAtk} className={`text-sm font-medium px-5 py-2.5 rounded-sm border transition-colors ${isAtk?'border-stone-200 dark:border-stone-800 text-stone-300 dark:text-stone-600 cursor-not-allowed bg-stone-50 dark:bg-stone-800':'border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'}`}>
               {isAtk?'Attack in progress…':'Simulate volumetric attack'}
             </button>
           </div>
@@ -355,47 +535,83 @@ const Simulator = () => {
 };
 
 /* ─────────────────── RESEARCH ─────────────────── */
+const RESEARCH_PAPERS = [
+  { t:'Feature Pruning Method for Hidden Markov Model-based Anomaly Detection', authors:'Alhaidari & Zohdy', year:'2018',
+    method:'Reduces the feature set used to train Hidden Markov Models for network anomaly detection, cutting inference cost without sacrificing detection accuracy.',
+    relevance:'Directly informs how Aegis keeps its own live feature set — packet velocity and IP entropy — deliberately minimal for real-time inference.' },
+  { t:'HMMPayl: An Intrusion Detection System Based on Hidden Markov Models', authors:'Ariu et al.', year:'2011',
+    method:'Models the byte-sequence structure of network payloads as Hidden Markov chains to flag anomalous payloads without relying on attack signatures.',
+    relevance:'An early precedent for signature-free, purely statistical detection — the same philosophy behind Aegis’s unsupervised Isolation Forest.' },
+  { t:'UNSW-NB15: A Comprehensive Data Set for Network Intrusion Detection Systems', authors:'Moustafa & Slay', year:'2015',
+    method:'Introduces a modern labeled network traffic dataset blending real and synthetic attack traffic for benchmarking intrusion detection systems.',
+    relevance:'A standard benchmark for validating anomaly-detection models like Aegis’s against realistic, contemporary attack traffic.' },
+  { t:'Multi-Layer Hidden Markov Model Based Intrusion Detection System', authors:'MDPI', year:'2018',
+    method:'Stacks multiple HMM layers to capture both short- and long-range temporal dependencies across a traffic sequence.',
+    relevance:'Demonstrates layered temporal modeling — a path for Aegis to move beyond single-window entropy scoring toward sequence-aware detection.' },
+  { t:'Deep Recurrent Hidden Markov Learning Framework for Multi-Stage Advanced Persistent Threat Prediction', authors:'—', year:'2026',
+    method:'Combines recurrent neural networks with HMM state transitions to predict multi-stage advanced persistent threats before they complete.',
+    relevance:'Points toward Aegis’s roadmap: moving from single-event anomaly scoring to predicting multi-stage attack campaigns ahead of time.' },
+  { t:'A Blockchain-Based Intrusion Detection System Using Viterbi Algorithm and Indirect Trust for IIoT Systems', authors:'MDPI', year:'2022',
+    method:'Combines Viterbi most-likely-state decoding with a blockchain-based indirect trust ledger distributed across IIoT nodes.',
+    relevance:'Explores decentralized trust scoring across many nodes — relevant to Aegis Enterprise’s multi-sensor EC2 fleet deployments.' },
+  { t:'Decepticon: A Hidden Markov Model Approach to Counter Advanced Persistent Threats', authors:'NSF', year:'—',
+    method:'Uses HMMs to model attacker behavior stages, then deploys deception tactics to disrupt advanced persistent threats mid-campaign.',
+    relevance:'Explores active deception as a complement to passive detection — a candidate future direction for Aegis’s circuit breaker response.' },
+];
+
+const ResearchCard = ({p}) => {
+  const [open,setOpen] = useState(false);
+  return (
+    <button onClick={()=>setOpen(o=>!o)} className="text-left border border-stone-200 dark:border-stone-800 rounded-sm p-5 bg-white dark:bg-stone-900 hover:border-stone-300 dark:hover:border-stone-700 transition-colors">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <span className="text-xs text-stone-400 font-mono">{p.authors} · {p.year}</span>
+        <ChevIco cls={`w-3.5 h-3.5 text-stone-400 flex-shrink-0 transition-transform ${open?'rotate-180':''}`}/>
+      </div>
+      <div className="serif text-base font-medium text-stone-800 dark:text-stone-200 leading-snug mb-2">{p.t}</div>
+      {open ? (
+        <div className="mt-3 space-y-2 fade-up">
+          <div><span className="text-xs uppercase tracking-widest text-stone-400 block mb-1">Methodology</span><p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{p.method}</p></div>
+          <div><span className="text-xs uppercase tracking-widest text-stone-400 block mb-1">Relevance to Aegis</span><p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{p.relevance}</p></div>
+        </div>
+      ) : (
+        <p className="text-xs text-stone-400 leading-relaxed">Tap to see methodology &amp; relevance →</p>
+      )}
+    </button>
+  );
+};
+
 const Research = () => (
   <section id="research" className="py-24 max-w-6xl mx-auto px-8">
-    <div className="grid md:grid-cols-3 gap-12">
-      <div>
-        <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Research</div>
-        <h2 className="text-3xl font-medium text-stone-900 leading-tight mb-5">Built on rigorous foundations.</h2>
-        <p className="text-sm text-stone-500 leading-relaxed">Grounded in peer-reviewed anomaly detection research. Open-sourced and fully documented.</p>
-      </div>
-      <div className="md:col-span-2">
-        {[
-          {tag:'Architecture',t:'Isolation Forest-Based Anomaly Detection for Distributed Reverse Proxy Firewalls',sub:'Technical Whitepaper · 2026'},
-          {tag:'Engineering',t:'SQS-Buffered Multi-Tenant Traffic Absorption: A Scalable Model A Implementation',sub:'Engineering Deep-Dive · 2026'},
-          {tag:'System Design',t:'Origin Concealment via Anycast DNS: Security and Latency Tradeoffs at Scale',sub:'System Design · 2026'},
-        ].map((r,i)=>(
-          <div key={i} className="flex items-start justify-between gap-4 border-t border-stone-200 py-6">
-            <div>
-              <div className="text-xs text-stone-400 font-mono mb-2">{r.tag}</div>
-              <div className="serif text-base font-medium text-stone-800 leading-snug mb-1">{r.t}</div>
-              <div className="text-xs text-stone-400">{r.sub}</div>
-            </div>
-            <a href="#" className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900 transition-colors flex-shrink-0 mt-1 whitespace-nowrap">Read <ArrowIco/></a>
-          </div>
-        ))}
-      </div>
+    <div className="mb-12 max-w-2xl">
+      <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Research</div>
+      <h2 className="text-4xl md:text-5xl font-medium text-stone-900 dark:text-stone-100 leading-tight tracking-tight">Built on rigorous foundations.</h2>
+      <p className="text-stone-500 dark:text-stone-400 text-base leading-relaxed mt-4">Grounded in peer-reviewed anomaly detection and intrusion detection research — the academic foundation for Aegis’s AI core.</p>
+    </div>
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {RESEARCH_PAPERS.map((p,i)=><ResearchCard key={i} p={p}/>)}
     </div>
   </section>
 );
 
 /* ─────────────────── CTA ─────────────────── */
-const CTA = ({onProtect}) => (
+const CTA = ({user,onDashboard}) => (
   <section className="bg-stone-900 py-24 px-8">
     <div className="max-w-4xl mx-auto text-center">
-      <div className="text-xs uppercase tracking-widest text-stone-600 mb-6">One IAM role away</div>
+      <div className="text-xs uppercase tracking-widest text-stone-600 mb-6">Free to try · Two tiers</div>
       <h2 className="text-4xl md:text-5xl font-medium text-stone-50 leading-tight tracking-tight mb-5">
-        Deploy Aegis into your VPC.<br/><em className="text-stone-400">We provision everything else.</em>
+        Install Aegis on your machine.<br/><em className="text-stone-400">We handle the AI from there.</em>
       </h2>
-      <p className="text-stone-400 text-base leading-relaxed mb-10 max-w-xl mx-auto">No DNS changes. No traffic egress. Provide an IAM Role ARN and our Terraform template deploys your entire AI defense stack in under 8 minutes.</p>
+      <p className="text-stone-400 text-base leading-relaxed mb-10 max-w-xl mx-auto">No DNS changes to start. No traffic egress. Download the desktop dashboard and choose a deployment tier — managed edge proxy or your own AWS VPC — in under 8 minutes.</p>
       <div className="flex flex-wrap gap-3 justify-center">
-        <button onClick={onProtect} className="inline-flex items-center gap-2 text-sm font-medium bg-stone-50 text-stone-900 px-7 py-3.5 rounded-sm hover:bg-white transition-colors">
-          Deploy to my VPC <ArrowIco/>
-        </button>
+        {user ? (
+          <button onClick={onDashboard} className="inline-flex items-center gap-2 text-sm font-medium bg-stone-50 text-stone-900 px-7 py-3.5 rounded-sm hover:bg-white transition-colors">
+            Go to Dashboard <ArrowIco/>
+          </button>
+        ) : (
+          <a href="/download" className="inline-flex items-center gap-2 text-sm font-medium bg-stone-50 text-stone-900 px-7 py-3.5 rounded-sm hover:bg-white transition-colors">
+            Download Aegis for PC <ArrowIco/>
+          </a>
+        )}
         <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-sm font-medium border border-stone-700 text-stone-300 px-7 py-3.5 rounded-sm hover:bg-stone-800 transition-colors">
           <div className="w-4 h-4"><GithubIco/></div>View on GitHub
         </a>
@@ -405,24 +621,23 @@ const CTA = ({onProtect}) => (
 );
 
 /* ─────────────────── FOOTER ─────────────────── */
-const Footer = ({onSignIn,onProtect}) => (
-  <footer className="border-t border-stone-200 py-12 px-8 bg-stone-50">
+const Footer = ({onSignIn}) => (
+  <footer className="border-t border-stone-200 dark:border-stone-800 py-12 px-8 bg-stone-50 dark:bg-stone-950">
     <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-10">
       <div className="max-w-xs">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-4 h-4 text-stone-700"><ShieldIco/></div>
-          <span className="text-sm font-semibold text-stone-900">Aegis</span>
-          <span className="text-xs text-stone-400 border border-stone-200 px-1.5 py-0.5 rounded-full ml-1">Model B</span>
+          <div className="w-4 h-4 text-stone-700 dark:text-stone-300"><ShieldIco/></div>
+          <span className="text-sm font-semibold text-stone-900 dark:text-stone-100">Aegis</span>
         </div>
-        <p className="text-xs text-stone-400 leading-relaxed mb-2">IaC Deployment — AI Defense inside your AWS VPC.<br/>CSE 5th Semester · Cloud Computing & AI Security · {new Date().getFullYear()}</p>
+        <p className="text-xs text-stone-400 leading-relaxed mb-2">Autonomous AI-powered DDoS defense — managed edge proxy or private VPC IaC.<br/>CSE 5th Semester · Cloud Computing & AI Security · {new Date().getFullYear()}</p>
         <p className="text-xs text-stone-400 font-mono">github.com/YelloMush/Autonomous_Firewall</p>
       </div>
       <div className="flex gap-14">
         <div>
           <div className="text-xs uppercase tracking-widest text-stone-400 mb-3">Product</div>
-          <button onClick={onProtect} className="block text-sm text-stone-500 hover:text-stone-900 transition-colors mb-2 text-left">Deploy to VPC</button>
-          <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="block text-sm text-stone-500 hover:text-stone-900 transition-colors mb-2">GitHub</a>
-          <button onClick={onSignIn} className="block text-sm text-stone-500 hover:text-stone-900 transition-colors mb-2 text-left">Sign In</button>
+          <a href="/download" className="block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors mb-2">Download for PC</a>
+          <a href="https://github.com/YelloMush/Autonomous_Firewall" target="_blank" rel="noopener" className="block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors mb-2">GitHub</a>
+          <button onClick={onSignIn} className="block text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors mb-2 text-left">Sign In</button>
         </div>
         <div>
           <div className="text-xs uppercase tracking-widest text-stone-400 mb-3">Stack</div>
@@ -436,7 +651,7 @@ const Footer = ({onSignIn,onProtect}) => (
 );
 
 /* ═══════════════════════════════════════════════════════════
-   ONBOARDING (Model B) — Cloud Auth → IaC Provisioning → Success
+   ONBOARDING (Aegis Enterprise) — Cloud Auth → IaC Provisioning → Success
    Auto-transitions to Dashboard 2.5s after deployment completes
    ═══════════════════════════════════════════════════════════ */
 const STEP_LABELS = ['Cloud Authentication','Infrastructure Provisioning','Deployment'];
@@ -508,13 +723,13 @@ const Onboarding = ({onBack, onSuccess}) => {
   const shortArn = arnValue.length > 40 ? arnValue.slice(0,18)+'…'+arnValue.slice(-12) : arnValue;
 
   return (
-    <div style={{minHeight:'100vh',background:'#fafaf9'}}>
-      <div className="fixed top-16 inset-x-0 z-30 h-px bg-stone-100">
-        <div className="h-full bg-stone-300 transition-all duration-700 ease-in-out"
+    <div style={{minHeight:'100vh',background:'var(--bg-app)'}}>
+      <div className="fixed top-16 inset-x-0 z-30 h-px bg-stone-100 dark:bg-stone-800">
+        <div className="h-full bg-stone-300 dark:bg-stone-600 transition-all duration-700 ease-in-out"
           style={{width:step===1?'33%':step===2?'66%':'100%'}}/>
       </div>
       <div className="pt-28 pb-24 max-w-xl mx-auto px-8">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-700 transition-colors mb-12"><BackIco/> Back to landing</button>
+        <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors mb-12"><BackIco/> Back to Home Page</button>
 
         {/* Stepper */}
         <div className="flex items-start mb-16">
@@ -522,12 +737,12 @@ const Onboarding = ({onBack, onSuccess}) => {
             <React.Fragment key={i}>
               <div className="flex flex-col items-center gap-2.5" style={{minWidth:'80px'}}>
                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-all duration-300"
-                  style={{background:step>=i+1?'#1c1917':'#f5f5f4',color:step>=i+1?'#fafaf9':'#a8a29e',border:step>i+1||step===i+1?'none':'1px solid #e7e5e4'}}>
+                  style={{background:step>=i+1?'var(--text-primary)':'var(--bg-subtle)',color:step>=i+1?'var(--bg-app)':'var(--text-faint)',border:step>i+1||step===i+1?'none':'1px solid var(--border)'}}>
                   {step>i+1?<svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>:i+1}
                 </div>
-                <span className="text-xs text-center leading-tight" style={{color:step===i+1?'#1c1917':step>i+1?'#78716c':'#a8a29e',fontWeight:step===i+1?500:400,maxWidth:'70px'}}>{label}</span>
+                <span className="text-xs text-center leading-tight" style={{color:step===i+1?'var(--text-primary)':step>i+1?'var(--text-muted)':'var(--text-faint)',fontWeight:step===i+1?500:400,maxWidth:'70px'}}>{label}</span>
               </div>
-              {i<STEP_LABELS.length-1&&<div className="flex-1 h-px mt-3.5 mx-3 transition-all duration-700" style={{background:step>i+1?'#1c1917':'#e7e5e4'}}/>}
+              {i<STEP_LABELS.length-1&&<div className="flex-1 h-px mt-3.5 mx-3 transition-all duration-700" style={{background:step>i+1?'var(--text-primary)':'var(--border)'}}/>}
             </React.Fragment>
           ))}
         </div>
@@ -536,9 +751,9 @@ const Onboarding = ({onBack, onSuccess}) => {
         {step===1&&(
           <div className="fade-up">
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Step 1 of 3 · Cloud Authentication</div>
-            <h2 className="serif text-4xl font-medium text-stone-900 leading-tight mb-3">Grant provisioning access.</h2>
-            <p className="text-stone-500 leading-relaxed mb-2 text-sm">Create a cross-account IAM Role in your AWS account and provide its ARN. Aegis will assume this role via STS to provision your VPC stack, then immediately release access.</p>
-            <div className="border border-stone-100 rounded-sm bg-white px-4 py-3 mb-7">
+            <h2 className="serif text-4xl font-medium text-stone-900 dark:text-stone-100 leading-tight mb-3">Grant provisioning access.</h2>
+            <p className="text-stone-500 dark:text-stone-400 leading-relaxed mb-2 text-sm">Create a cross-account IAM Role in your AWS account and provide its ARN. Aegis will assume this role via STS to provision your VPC stack, then immediately release access.</p>
+            <div className="border border-stone-100 dark:border-stone-800 rounded-sm bg-white dark:bg-stone-900 px-4 py-3 mb-7">
               {[
                 'Go to AWS IAM → Roles → Create Role',
                 'Trusted entity: Another AWS account (ID: 123456789012)',
@@ -546,20 +761,20 @@ const Onboarding = ({onBack, onSuccess}) => {
                 'Name it AegisProvisionRole and copy the ARN below',
               ].map((s,i)=>(
                 <div key={i} className="flex items-start gap-3 py-1.5">
-                  <span className="text-xs font-mono text-stone-300 flex-shrink-0 mt-0.5">{String(i+1).padStart(2,'0')}</span>
-                  <span className="text-xs text-stone-500 leading-relaxed">{s}</span>
+                  <span className="text-xs font-mono text-stone-300 dark:text-stone-600 flex-shrink-0 mt-0.5">{String(i+1).padStart(2,'0')}</span>
+                  <span className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{s}</span>
                 </div>
               ))}
             </div>
             <form onSubmit={handleArnSubmit}>
               <div className="mb-2">
-                <label className="block text-xs text-stone-500 mb-2 tracking-wide uppercase">AWS IAM Role ARN</label>
+                <label className="block text-xs text-stone-500 dark:text-stone-400 mb-2 tracking-wide uppercase">AWS IAM Role ARN</label>
                 <input type="text" className="fi" placeholder="arn:aws:iam::123456789012:role/AegisProvisionRole"
                   autoFocus value={arnValue} onChange={e=>{setArnValue(e.target.value);setApiError('');}} disabled={verifying}
                   style={{fontSize:'14px',padding:'13px 15px',fontFamily:'monospace'}}/>
               </div>
               <p className="text-xs text-stone-400 mb-5">Format: <span className="font-mono">arn:aws:iam::&lt;account-id&gt;:role/&lt;role-name&gt;</span></p>
-              {apiError&&<div className="border border-stone-200 bg-white rounded-sm px-4 py-3.5 mb-5"><div className="text-xs text-stone-600 leading-relaxed font-mono whitespace-pre-wrap">{apiError}</div></div>}
+              {apiError&&<div className="border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-sm px-4 py-3.5 mb-5"><div className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-mono whitespace-pre-wrap">{apiError}</div></div>}
               <button type="submit" className="pb" disabled={verifying||!arnValue.trim()} style={{padding:'13px'}}>
                 {verifying?'Verifying IAM access…':'Authenticate & Deploy →'}
               </button>
@@ -571,27 +786,27 @@ const Onboarding = ({onBack, onSuccess}) => {
         {step===2&&(
           <div className="fade-up">
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-4">Step 2 of 3 · Infrastructure Provisioning</div>
-            <h2 className="serif text-4xl font-medium text-stone-900 leading-tight mb-3">Deploying your stack…</h2>
-            <p className="text-stone-500 leading-relaxed mb-2 text-sm">Aegis is provisioning resources inside your VPC using your IAM Role. This typically completes in under 8 minutes.</p>
-            <div className="text-xs font-mono text-stone-300 mb-8">{shortArn}</div>
-            <div className="border border-stone-100 rounded-sm bg-white overflow-hidden">
+            <h2 className="serif text-4xl font-medium text-stone-900 dark:text-stone-100 leading-tight mb-3">Deploying your stack…</h2>
+            <p className="text-stone-500 dark:text-stone-400 leading-relaxed mb-2 text-sm">Aegis is provisioning resources inside your VPC using your IAM Role. This typically completes in under 8 minutes.</p>
+            <div className="text-xs font-mono text-stone-300 dark:text-stone-600 mb-8">{shortArn}</div>
+            <div className="border border-stone-100 dark:border-stone-800 rounded-sm bg-white dark:bg-stone-900 overflow-hidden">
               {PROV_STEPS.map((ps,i) => {
                 const item = provItems.find(p=>p.id===ps.id);
                 const active = item && !item.done;
                 const done   = item && item.done;
                 return (
-                  <div key={ps.id} className={`flex items-center gap-4 px-5 py-3.5 ${i<PROV_STEPS.length-1?'border-b border-stone-50':''} transition-all duration-300`}
-                    style={{background: done?'rgba(106,148,121,0.03)':'#fff'}}>
+                  <div key={ps.id} className={`flex items-center gap-4 px-5 py-3.5 ${i<PROV_STEPS.length-1?'border-b border-stone-50 dark:border-stone-800':''} transition-all duration-300`}
+                    style={{background: done?'rgba(106,148,121,0.03)':'var(--bg-surface)'}}>
                     <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                       {done ? (
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke={TC.sage} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
                       ) : active ? (
                         <span className="w-2 h-2 rounded-full" style={{background:'#b45309',animation:'blink 1s infinite',display:'inline-block'}}/>
                       ) : (
-                        <span className="w-2 h-2 rounded-full bg-stone-200" style={{display:'inline-block'}}/>
+                        <span className="w-2 h-2 rounded-full bg-stone-200 dark:bg-stone-700" style={{display:'inline-block'}}/>
                       )}
                     </div>
-                    <span className="text-sm font-mono" style={{color: done?TC.sage : active?'#1c1917':'#a8a29e'}}>{ps.label}</span>
+                    <span className="text-sm font-mono" style={{color: done?TC.sage : active?'var(--text-primary)':'var(--text-faint)'}}>{ps.label}</span>
                   </div>
                 );
               })}
@@ -611,11 +826,11 @@ const Onboarding = ({onBack, onSuccess}) => {
               </div>
             </div>
             <div className="text-xs uppercase tracking-widest font-medium mb-4" style={{color:TC.sage}}>Infrastructure Deployed</div>
-            <h2 className="serif text-3xl font-medium text-stone-900 leading-tight mb-3">Traffic is now routed through<br/>your local Aegis SQS buffer.</h2>
-            <p className="text-stone-500 text-sm leading-relaxed mb-6">Your AWS VPC is fully protected. All edge traffic passes through your in-VPC SQS buffer and AI core — no data leaves your cloud environment.</p>
+            <h2 className="serif text-3xl font-medium text-stone-900 dark:text-stone-100 leading-tight mb-3">Traffic is now routed through<br/>your local Aegis SQS buffer.</h2>
+            <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed mb-6">Your AWS VPC is fully protected. All edge traffic passes through your in-VPC SQS buffer and AI core — no data leaves your cloud environment.</p>
             <div className="flex flex-wrap justify-center gap-2 mb-8">
               {['SQS Buffers ✓','EC2 Edge Sensors ✓','AI Core ✓','NACL Rules ✓'].map(b=>(
-                <span key={b} className="text-xs font-mono border border-stone-200 rounded-sm px-2.5 py-1 bg-white" style={{color:TC.sage}}>{b}</span>
+                <span key={b} className="text-xs font-mono border border-stone-200 dark:border-stone-700 rounded-sm px-2.5 py-1 bg-white dark:bg-stone-900" style={{color:TC.sage}}>{b}</span>
               ))}
             </div>
             {redirecting ? (
@@ -639,7 +854,13 @@ const Onboarding = ({onBack, onSuccess}) => {
    DASHBOARD — Live Telemetry & Attack Simulation
    Phases: nominal → breach (3s) → mitigating (auto)
    ═══════════════════════════════════════════════════════════════════════════ */
-const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => {
+const Dashboard = ({ tenantData, user, onBackToSite, onConfigureVpc, dark, onToggleDark }) => {
+  const userName = user?.name || 'Guest';
+  // Warning/alert tints need a dark-mode counterpart — a literal amber-50
+  // (#fffbeb) reads as a jarring bright patch against a dark background.
+  const warnBg     = dark ? 'rgba(180,83,9,0.14)' : '#fffbeb';
+  const warnBorder = dark ? 'rgba(180,83,9,0.4)'   : '#fde68a';
+  const warnText   = dark ? '#fbbf24' : '#92400e';
   const domain    = tenantData?.domain_name || 'api.demo-tenant.com';
   const tenId     = tenantData?.tenant_id   || 'demo';
   const ingressIp = tenantData?.ingress_ip  || '34.100.182.41';
@@ -808,8 +1029,8 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
     return (s[phase] || s.nominal)[i];
   };
   const nodeColors = {
-    neutral: { border:'#e7e5e4',                       bg:'#fff',                             icon:'#a8a29e' },
-    warn:    { border:'#fde68a',                       bg:'#fffbeb',                          icon:TC.amberBar },
+    neutral: { border:'var(--border-mid)',              bg:'var(--bg-surface)',                icon:'var(--text-faint)' },
+    warn:    { border:warnBorder,                       bg:warnBg,                             icon:TC.amberBar },
     safe:    { border:'rgba(106,148,121,0.4)',          bg:'rgba(106,148,121,0.05)',           icon:TC.sage },
     surge:   { border:'#cbd5e1',                       bg:'rgba(71,85,105,0.04)',              icon:slateBlue },
   };
@@ -844,33 +1065,34 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
   ];
   const phaseCards = simScenario === 'flashCrowd' ? flashCrowdPhases : simScenario === 'botnet' ? botnetPhases : null;
   const phaseCardColor = (p) => ({
-    active: { sage:'rgba(106,148,121,0.4)', slate:'#cbd5e1', amber:'#fde68a' }[p.color],
-    bg:     { sage:'rgba(106,148,121,0.04)', slate:'rgba(71,85,105,0.04)', amber:'#fffbeb' }[p.color],
+    active: { sage:'rgba(106,148,121,0.4)', slate:'#cbd5e1', amber:warnBorder }[p.color],
+    bg:     { sage:'rgba(106,148,121,0.04)', slate:'rgba(71,85,105,0.04)', amber:warnBg }[p.color],
     dot:    { sage:TC.sage, slate:slateBlue, amber:TC.amberBar }[p.color],
-    text:   { sage:TC.sage, slate:slateBlue, amber:'#92400e' }[p.color],
+    text:   { sage:TC.sage, slate:slateBlue, amber:warnText }[p.color],
   });
 
   return (
-    <div style={{minHeight:'100vh', background:'#fafaf9'}}>
+    <div style={{minHeight:'100vh', background:'var(--bg-app)'}}>
 
       {/* Dashboard nav */}
-      <div className="fixed top-0 inset-x-0 z-40 bg-stone-50/97 backdrop-blur-md border-b border-stone-200">
+      <div className="fixed top-0 inset-x-0 z-40 bg-stone-50/97 dark:bg-stone-950/97 backdrop-blur-md border-b border-stone-200 dark:border-stone-800">
         <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-4 h-4 text-stone-700 flex-shrink-0"><ShieldIco/></div>
-            <span className="text-sm font-semibold text-stone-900 flex-shrink-0">Aegis</span>
-            <span className="w-px h-4 bg-stone-200 mx-1 flex-shrink-0"/>
-            <span className="text-sm text-stone-500 font-mono truncate hidden sm:block">{domain}</span>
+            <div className="w-4 h-4 text-stone-700 dark:text-stone-300 flex-shrink-0"><ShieldIco/></div>
+            <span className="text-sm font-semibold text-stone-900 dark:text-stone-100 flex-shrink-0">Aegis</span>
+            <span className="w-px h-4 bg-stone-200 dark:bg-stone-800 mx-1 flex-shrink-0"/>
+            <span className="text-sm text-stone-500 dark:text-stone-400 font-mono truncate hidden sm:block">{domain}</span>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <span className="w-1.5 h-1.5 rounded-full" style={{background:protectionDot, animation:'blink 1.4s infinite', display:'inline-block'}}/>
               <span className="text-xs font-medium transition-colors duration-500" style={{color:protectionDot}}>{protectionLabel}</span>
             </div>
           </div>
-          <div className="flex items-center gap-5">
-            <button onClick={onBackToSite} className="text-sm text-stone-400 hover:text-stone-700 transition-colors hidden sm:block">← Landing page</button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle dark={dark} onToggle={onToggleDark}/>
+            <button onClick={onBackToSite} className="text-sm text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors hidden sm:block">← Back to Home Page</button>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-700 flex-shrink-0">S</div>
-              <span className="text-sm font-medium text-stone-700 hidden md:block">{userName}</span>
+              <div className="w-6 h-6 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center text-xs font-bold text-stone-700 dark:text-stone-200 flex-shrink-0">{initials(userName)}</div>
+              <span className="text-sm font-medium text-stone-700 dark:text-stone-300 hidden md:block">{userName}</span>
             </div>
           </div>
         </div>
@@ -880,10 +1102,13 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
 
         {/* Page header */}
         <div className="mb-10 pt-2">
-          <div className="text-xs uppercase tracking-widest text-stone-400 mb-2">Tenant Dashboard · Model B · VPC Deployment</div>
+          <div className="text-xs uppercase tracking-widest text-stone-400 mb-2">Tenant Dashboard · {user?.tier==='enterprise' ? 'Aegis Enterprise · VPC Deployment' : 'Aegis Shield · Edge Proxy'}</div>
           <div className="flex items-end gap-4 flex-wrap">
-            <h1 className="serif text-3xl font-medium text-stone-900">{domain}</h1>
-            <span className="text-sm font-mono text-stone-400 border border-stone-200 rounded-sm px-2.5 py-1 bg-white mb-0.5">{tenId.slice(0,12)}…</span>
+            <h1 className="serif text-3xl font-medium text-stone-900 dark:text-stone-100">{domain}</h1>
+            <span className="text-sm font-mono text-stone-400 border border-stone-200 dark:border-stone-700 rounded-sm px-2.5 py-1 bg-white dark:bg-stone-900 mb-0.5">{tenId.slice(0,12)}…</span>
+            {user?.tier==='enterprise' && (
+              <button onClick={onConfigureVpc} className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 underline underline-offset-2 mb-1">Configure AWS VPC →</button>
+            )}
           </div>
           <p className="text-sm text-stone-400 mt-1.5">
             Ingress IP: <span className="font-mono">{ingressIp}</span>
@@ -899,7 +1124,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
           <div className="card p-6">
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-5">Edge Ingestion Rate</div>
             <div className="flex items-baseline gap-2 mb-1.5">
-              <span className="serif text-4xl font-medium text-stone-900" style={{lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{fmtReq(displayM.edge)}</span>
+              <span className="serif text-4xl font-medium text-stone-900 dark:text-stone-100" style={{lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{fmtReq(displayM.edge)}</span>
               <span className="text-sm text-stone-400">req/s</span>
             </div>
             <div className="text-xs mb-4 h-4 transition-colors duration-400" style={{color:edgeBarColor}}>
@@ -919,17 +1144,17 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
 
           {/* 2. AI Anomaly Score */}
           <div className="card p-6 transition-all duration-500"
-            style={{borderColor:breaching?'#fde68a':'#e7e5e4', background:breaching?'#fffbeb':'#fff'}}>
+            style={{borderColor:breaching?warnBorder:'var(--border)', background:breaching?warnBg:'var(--bg-surface)'}}>
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-5">AI Anomaly Score</div>
             <div className="flex items-baseline gap-2 mb-1.5">
               <span className="text-4xl font-mono font-medium transition-colors duration-300"
-                style={{lineHeight:1, color:breaching?'#92400e':'#1c1917', fontVariantNumeric:'tabular-nums'}}>
+                style={{lineHeight:1, color:breaching?warnText:'var(--text-primary)', fontVariantNumeric:'tabular-nums'}}>
                 {displayM.anomaly.toFixed(3)}
               </span>
               <span className="text-sm text-stone-400">/ 1.00</span>
             </div>
             <div className="text-xs mb-4 h-4 transition-colors duration-300"
-              style={{color:breaching?'#92400e':TC.sage}}>
+              style={{color:breaching?warnText:TC.sage}}>
               {breaching ? '⚠ Threshold breached (>= 0.60)' : '✓ Within safe threshold (< 0.60)'}
             </div>
             <div className="relative metric-bar">
@@ -947,7 +1172,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
           <div className="card p-6">
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-5">Origin Server Load</div>
             <div className="flex items-baseline gap-2 mb-1.5">
-              <span className="serif text-4xl font-medium text-stone-900" style={{lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{fmtReq(displayM.origin)}</span>
+              <span className="serif text-4xl font-medium text-stone-900 dark:text-stone-100" style={{lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{fmtReq(displayM.origin)}</span>
               <span className="text-sm text-stone-400">req/s</span>
             </div>
             <div className="text-xs mb-4 h-4" style={{color:phase==='flashCrowd'?slateBlue:TC.sage}}>
@@ -966,17 +1191,17 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
 
           {/* 4. IP Distribution Entropy (NEW) */}
           <div className="card p-6 transition-all duration-500"
-            style={{borderColor:lowEntropy?'#fde68a':'#e7e5e4', background:lowEntropy?'#fffbeb':'#fff'}}>
+            style={{borderColor:lowEntropy?warnBorder:'var(--border)', background:lowEntropy?warnBg:'var(--bg-surface)'}}>
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-5">IP Distribution Entropy</div>
             <div className="flex items-baseline gap-2 mb-1.5">
               <span className="text-4xl font-mono font-medium transition-colors duration-300"
-                style={{lineHeight:1, color:lowEntropy?'#92400e':'#1c1917', fontVariantNumeric:'tabular-nums'}}>
+                style={{lineHeight:1, color:lowEntropy?warnText:'var(--text-primary)', fontVariantNumeric:'tabular-nums'}}>
                 {displayM.entropy.toFixed(2)}
               </span>
               <span className="text-sm text-stone-400">bits</span>
             </div>
             <div className="text-xs mb-1 h-4 transition-colors duration-300"
-              style={{color:lowEntropy?'#92400e':TC.sage}}>
+              style={{color:lowEntropy?warnText:TC.sage}}>
               {lowEntropy ? '⚠ Low — Coordinated botnet pattern' : '✓ High — Diverse legitimate sources'}
             </div>
             <div className="text-xs text-stone-300 font-mono mb-3">H = −Σ pᵢ log₂ pᵢ · Max 8 bits</div>
@@ -1003,14 +1228,14 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
               {Math.round(displayM.sqsUtil)}%
             </span>
           </div>
-          <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
             <div className="h-full rounded-full transition-all duration-200"
               style={{
                 width:`${displayM.sqsUtil.toFixed(1)}%`,
                 background: displayM.sqsUtil>85 ? TC.amberBar : displayM.sqsUtil>60 ? slateBlue : TC.sage,
               }}/>
           </div>
-          <div className="mt-2 text-xs" style={{color:'#a8a29e'}}>
+          <div className="mt-2 text-xs" style={{color:'var(--text-faint)'}}>
             {displayM.sqsUtil > 85
               ? 'Buffer under heavy load. Messages queued for AI evaluation.'
               : displayM.sqsUtil > 55
@@ -1033,7 +1258,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
                       <div className="w-4 h-4 transition-colors duration-500" style={{color:c.icon}}>{node.icon}</div>
                     </div>
                     <div className="text-center" style={{maxWidth:'72px'}}>
-                      <div className="text-xs font-medium text-stone-700 leading-tight">{node.label}</div>
+                      <div className="text-xs font-medium text-stone-700 dark:text-stone-300 leading-tight">{node.label}</div>
                       <div className="text-xs text-stone-400 leading-tight">{node.sub}</div>
                     </div>
                   </div>
@@ -1044,7 +1269,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
               );
             })}
           </div>
-          <div className="mt-6 pt-5 border-t border-stone-100 flex items-center gap-2">
+          <div className="mt-6 pt-5 border-t border-stone-100 dark:border-stone-800 flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:statusTextColor, animation:'blink 1.4s infinite', display:'inline-block'}}/>
             <span className="text-xs transition-colors duration-400 leading-relaxed" style={{color:statusTextColor}}>{statusMsg}</span>
           </div>
@@ -1054,25 +1279,25 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
         <div className="card p-6 mb-5">
           <div className="mb-5">
             <div className="text-xs uppercase tracking-widest text-stone-400 mb-1.5">Stress Test Network</div>
-            <p className="text-sm text-stone-500 max-w-2xl">
-              Run two distinct scenarios to demonstrate how the AI differentiates a <strong className="text-stone-700 font-medium">legitimate viral surge</strong> (high entropy, scale-up) from a <strong className="text-stone-700 font-medium">coordinated botnet attack</strong> (entropy collapse, NACL injection).
+            <p className="text-sm text-stone-500 dark:text-stone-400 max-w-2xl">
+              Run two distinct scenarios to demonstrate how the AI differentiates a <strong className="text-stone-700 dark:text-stone-300 font-medium">legitimate viral surge</strong> (high entropy, scale-up) from a <strong className="text-stone-700 dark:text-stone-300 font-medium">coordinated botnet attack</strong> (entropy collapse, NACL injection).
             </p>
           </div>
 
           {/* Scenario preview / phase timeline */}
           {!simScenario && (
             <div className="grid sm:grid-cols-2 gap-3 mb-6">
-              <div className="border border-stone-100 rounded-sm p-4">
+              <div className="border border-stone-100 dark:border-stone-800 rounded-sm p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" style={{display:'inline-block'}}/>
                   <span className="text-xs font-medium" style={{color:slateBlue}}>Viral Launch Scenario</span>
                 </div>
                 <p className="text-xs text-stone-400 leading-relaxed">Edge spikes to 95k req/s · IP entropy stays HIGH (diverse sources) · Anomaly score stays LOW · Origin scales up safely to ~2.5k req/s</p>
               </div>
-              <div className="border border-stone-100 rounded-sm p-4">
+              <div className="border border-stone-100 dark:border-stone-800 rounded-sm p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:TC.amberBar, display:'inline-block'}}/>
-                  <span className="text-xs font-medium" style={{color:'#92400e'}}>Botnet DDoS Scenario</span>
+                  <span className="text-xs font-medium" style={{color:warnText}}>Botnet DDoS Scenario</span>
                 </div>
                 <p className="text-xs text-stone-400 leading-relaxed">Edge spikes to 95k req/s · IP entropy DROPS (narrow botnet IPs) · Anomaly score breaches 0.60 · Origin shielded · NACL injected</p>
               </div>
@@ -1086,17 +1311,17 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
                 return (
                   <div key={i} className="border rounded-sm p-3.5 transition-all duration-500"
                     style={{
-                      borderColor: p.active ? pc.active : p.done ? 'rgba(106,148,121,0.25)' : '#f5f5f4',
+                      borderColor: p.active ? pc.active : p.done ? 'rgba(106,148,121,0.25)' : 'var(--border)',
                       background:  p.active ? pc.bg    : 'transparent',
                     }}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{
-                        background: p.done ? TC.sage : p.active ? pc.dot : '#d6d3d1',
+                        background: p.done ? TC.sage : p.active ? pc.dot : 'var(--border-mid)',
                         animation: p.active ? 'blink 1.4s infinite' : 'none',
                         display:'inline-block',
                       }}/>
                       <span className="text-xs font-medium" style={{
-                        color: p.done ? TC.sage : p.active ? pc.text : '#a8a29e',
+                        color: p.done ? TC.sage : p.active ? pc.text : 'var(--text-faint)',
                       }}>{p.label}</span>
                     </div>
                     <p className="text-xs text-stone-400 leading-relaxed">{p.detail}</p>
@@ -1111,8 +1336,8 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
             <button onClick={launchFlashCrowd} disabled={simScenario !== null}
               className="text-sm font-medium px-5 py-2.5 border rounded-sm transition-all duration-200"
               style={{
-                borderColor: simScenario==='flashCrowd' ? '#cbd5e1' : simScenario!==null ? '#e7e5e4' : slateBlue,
-                color:       simScenario==='flashCrowd' ? slateBlue  : simScenario!==null ? '#a8a29e' : slateBlue,
+                borderColor: simScenario==='flashCrowd' ? '#cbd5e1' : simScenario!==null ? 'var(--border)' : slateBlue,
+                color:       simScenario==='flashCrowd' ? slateBlue  : simScenario!==null ? 'var(--text-faint)' : slateBlue,
                 background:  simScenario==='flashCrowd' ? 'rgba(71,85,105,0.04)' : 'transparent',
                 cursor:      simScenario!==null ? 'not-allowed' : 'pointer',
               }}>
@@ -1122,9 +1347,9 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
             <button onClick={launchBotnet} disabled={simScenario !== null}
               className="text-sm font-medium px-5 py-2.5 border rounded-sm transition-all duration-200"
               style={{
-                borderColor: simScenario==='botnet' && phase==='breach' ? '#fde68a' : simScenario==='botnet' ? '#d6d3d1' : simScenario!==null ? '#e7e5e4' : '#1c1917',
-                color:       simScenario==='botnet' && phase==='breach' ? '#92400e' : simScenario==='botnet' ? '#a8a29e' : simScenario!==null ? '#a8a29e' : '#1c1917',
-                background:  simScenario==='botnet' && phase==='breach' ? '#fffbeb' : 'transparent',
+                borderColor: simScenario==='botnet' && phase==='breach' ? warnBorder : simScenario==='botnet' ? 'var(--border-mid)' : simScenario!==null ? 'var(--border)' : 'var(--text-primary)',
+                color:       simScenario==='botnet' && phase==='breach' ? warnText : simScenario==='botnet' ? 'var(--text-faint)' : simScenario!==null ? 'var(--text-faint)' : 'var(--text-primary)',
+                background:  simScenario==='botnet' && phase==='breach' ? warnBg : 'transparent',
                 cursor:      simScenario!==null ? 'not-allowed' : 'pointer',
               }}>
               {simScenario==='botnet' && phase==='breach'     ? 'Botnet Attack in progress…'
@@ -1133,7 +1358,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
             </button>
 
             {simScenario !== null && (
-              <button onClick={resetSim} className="text-sm text-stone-400 hover:text-stone-700 transition-colors underline underline-offset-2">
+              <button onClick={resetSim} className="text-sm text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors underline underline-offset-2">
                 Reset
               </button>
             )}
@@ -1143,9 +1368,9 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
         {/* ── NACL Rules (botnet mitigating only) ── */}
         {naclRules.length > 0 && (
           <div className="card overflow-hidden mb-5 fade-up">
-            <div className="px-5 py-3.5 border-b border-stone-100 flex items-center justify-between">
+            <div className="px-5 py-3.5 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-xs uppercase tracking-widest text-stone-500 font-medium">Boto3 NACL Rules Injected</span>
+                <span className="text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 font-medium">Boto3 NACL Rules Injected</span>
                 <span className="text-xs text-stone-300 font-mono hidden sm:block">aws_infrastructure/aegis_nacl.py</span>
               </div>
               <span className="flex items-center gap-1.5 text-xs font-medium" style={{color:TC.sage}}>
@@ -1156,7 +1381,7 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-stone-100 dark:border-stone-800">
                     {['Rule #','Action','Source CIDR','Protocol','Direction','Hits'].map(h=>(
                       <th key={h} className="px-5 py-2.5 text-left text-xs text-stone-400 font-medium uppercase tracking-wide whitespace-nowrap">{h}</th>
                     ))}
@@ -1164,13 +1389,13 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
                 </thead>
                 <tbody>
                   {naclRules.map((r,i)=>(
-                    <tr key={i} className="border-b border-stone-50 hover:bg-stone-50 transition-colors">
-                      <td className="px-5 py-3 text-xs font-mono text-stone-600">{r.rule}</td>
-                      <td className="px-5 py-3 text-xs font-mono font-semibold" style={{color:'#9a3412'}}>DENY</td>
-                      <td className="px-5 py-3 text-xs font-mono text-stone-600">{r.cidr}</td>
+                    <tr key={i} className="border-b border-stone-50 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
+                      <td className="px-5 py-3 text-xs font-mono text-stone-600 dark:text-stone-300">{r.rule}</td>
+                      <td className="px-5 py-3 text-xs font-mono font-semibold" style={{color:warnText}}>DENY</td>
+                      <td className="px-5 py-3 text-xs font-mono text-stone-600 dark:text-stone-300">{r.cidr}</td>
                       <td className="px-5 py-3 text-xs font-mono text-stone-400">{r.proto}</td>
                       <td className="px-5 py-3 text-xs font-mono text-stone-400">{r.dir}</td>
-                      <td className="px-5 py-3 text-xs font-mono text-stone-600">{r.hits}</td>
+                      <td className="px-5 py-3 text-xs font-mono text-stone-600 dark:text-stone-300">{r.hits}</td>
                     </tr>
                   ))}
                   <tr>
@@ -1186,8 +1411,8 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
 
         {/* ── Event Log ── */}
         <div className="card overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-stone-100 flex items-center justify-between">
-            <span className="text-xs uppercase tracking-widest text-stone-500 font-medium">Event Log</span>
+          <div className="px-5 py-3.5 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between">
+            <span className="text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 font-medium">Event Log</span>
             <span className="text-xs text-stone-300 font-mono">{events.length} entries</span>
           </div>
           <div style={{maxHeight:'260px', overflowY:'auto'}}>
@@ -1195,13 +1420,13 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
               <div className="px-5 py-5 text-xs text-stone-300 font-mono">No events yet.</div>
             )}
             {events.map((e,i) => (
-              <div key={e.id} className={`flex items-start gap-4 px-5 py-3 ${i<events.length-1?'border-b border-stone-50':''}`}>
+              <div key={e.id} className={`flex items-start gap-4 px-5 py-3 ${i<events.length-1?'border-b border-stone-50 dark:border-stone-800':''}`}>
                 <span className="text-xs font-mono text-stone-300 flex-shrink-0 mt-0.5 tabular-nums">{e.time}</span>
                 <span className="text-xs leading-relaxed transition-colors" style={{
-                  color: e.type==='alert'   ? '#92400e'
+                  color: e.type==='alert'   ? warnText
                        : e.type==='success' ? TC.sage
                        : e.type==='info' && simScenario==='flashCrowd' ? slateBlue
-                       : '#78716c'
+                       : 'var(--text-muted)'
                 }}>{e.msg}</span>
               </div>
             ))}
@@ -1219,51 +1444,58 @@ const Dashboard = ({ tenantData, userName = 'Somraj Sarkar', onBackToSite }) => 
    APP ROOT
    ═══════════════════════════════════════════════════════════ */
 const App = () => {
-  const [isLoggedIn,  setIsLoggedIn]  = useState(false);
-  const [modal,       setModal]       = useState(null);
+  const { user, signIn, signUp, signOut, lookupEmail } = useAuth();
+  const [dark, toggleDark] = useDarkMode();
+  const [modalOpen,   setModalOpen]   = useState(false);
   const [view,        setView]        = useState('landing');
   const [dashTenant,  setDashTenant]  = useState(null);
 
-  const signIn      = useCallback(()=>{ setIsLoggedIn(true); setModal(null); }, []);
-  const signOut     = useCallback(()=>{ setIsLoggedIn(false); setView('landing'); window.scrollTo(0,0); }, []);
-  const openSignIn  = useCallback(()=>setModal('signin'), []);
-  const closeModal  = useCallback(()=>setModal(null), []);
-  const goProtect   = useCallback(()=>{ setView('onboarding');  window.scrollTo(0,0); }, []);
-  const goLanding   = useCallback(()=>{ setView('landing');     window.scrollTo(0,0); }, []);
-  const goDashboard = useCallback(()=>{ setView('dashboard');   window.scrollTo(0,0); }, []);
+  const openSignIn   = useCallback(()=>setModalOpen(true), []);
+  const closeModal   = useCallback(()=>setModalOpen(false), []);
+  // Clear any prior tenant data on sign-out — otherwise the next person to
+  // sign in on this browser would briefly see the previous user's dashboard.
+  const doSignOut    = useCallback(()=>{ signOut(); setDashTenant(null); setView('landing'); window.scrollTo(0,0); }, [signOut]);
+  const goProtect    = useCallback(()=>{ setView('onboarding');  window.scrollTo(0,0); }, []);
+  const goLanding    = useCallback(()=>{ setView('landing');     window.scrollTo(0,0); }, []);
+  const goDashboard  = useCallback(()=>{ setView('dashboard');   window.scrollTo(0,0); }, []);
 
-  /* Called by Onboarding when DNS verified — auto-logins and jumps to dashboard */
+  /* Authenticated users land straight on their dashboard — the desktop app
+     download is the primary path now, this web dashboard is a live preview. */
+  const handleAuthed = useCallback(() => { setDashTenant(null); setView('dashboard'); window.scrollTo(0,0); }, []);
+
+  /* Called by Onboarding when a VPC ARN is verified — jumps to dashboard with that tenant */
   const handleOnboardingSuccess = useCallback((data) => {
     setDashTenant(data);
-    setIsLoggedIn(true);
     setView('dashboard');
     window.scrollTo(0,0);
   }, []);
 
   return (
-    <div className="bg-stone-50">
-      {modal==='signin' && <SignInModal onClose={closeModal} onSignIn={signIn}/>}
+    <div style={{background:'var(--bg-app)', minHeight:'100vh'}}>
+      {modalOpen && <AuthModal onClose={closeModal} onAuthed={handleAuthed} lookupEmail={lookupEmail} signIn={signIn} signUp={signUp}/>}
 
       {/* Main Nav — hidden on dashboard (dashboard has its own header) */}
       {view !== 'dashboard' && (
         <Nav
-          isLoggedIn={isLoggedIn}
+          user={user}
           onSignIn={openSignIn}
-          onSignOut={signOut}
-          onProtect={goProtect}
+          onSignOut={doSignOut}
+          onLogoClick={goLanding}
           onDashboard={goDashboard}
+          dark={dark}
+          onToggleDark={toggleDark}
         />
       )}
 
       {view === 'landing' && (
         <>
-          <Hero     onProtect={goProtect}/>
+          <Hero     user={user} onDashboard={goDashboard}/>
           <Stats/>
           <HowItWorks/>
           <Simulator/>
           <Research/>
-          <CTA      onProtect={goProtect}/>
-          <Footer   onSignIn={openSignIn} onProtect={goProtect}/>
+          <CTA      user={user} onDashboard={goDashboard}/>
+          <Footer   onSignIn={openSignIn}/>
         </>
       )}
 
@@ -1274,8 +1506,11 @@ const App = () => {
       {view === 'dashboard' && (
         <Dashboard
           tenantData={dashTenant}
-          userName="Somraj Sarkar"
+          user={user}
           onBackToSite={goLanding}
+          onConfigureVpc={goProtect}
+          dark={dark}
+          onToggleDark={toggleDark}
         />
       )}
     </div>
