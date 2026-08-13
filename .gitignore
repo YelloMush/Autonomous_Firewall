@@ -22,6 +22,9 @@ env/
 *.pem
 aws_infrastructure/aegis_edge_key.pem
 
+# Real AWS resource IDs / EC2 IPs written by the deploy scripts — not source
+aws_infrastructure/aegis_config.txt
+
 # Database — runtime artifact, not source code
 *.db
 *.db-shm
@@ -37,3 +40,14 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Generated release bundles (produced by package_release.py) — not source
+project-aegis-presentation.zip
+
+# V2 landing page draft (Next.js) — experimental, kept out of this push
+web_frontend/
+
+# PyInstaller output for the bundled installer — rebuilt by
+# packaging/build_installer.py, not source. (packaging/build/ is already
+# covered by the generic build/ rule above.)
+packaging/backend_dist/

@@ -22,6 +22,12 @@ export default {
           border:  'rgba(179,106,85,0.30)',
           dim:     '#8a4f3e',
         },
+        amber: {
+          DEFAULT: '#b45309',
+          light:   'rgba(180,83,9,0.12)',
+          border:  'rgba(180,83,9,0.30)',
+          dim:     '#7c3a08',
+        },
       },
       borderRadius: {
         sm:      '2px',

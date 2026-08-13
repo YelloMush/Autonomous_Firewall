@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TickNumber from './TickNumber';
 
 const isElectron = !!(window.aegis);
 
@@ -37,7 +38,7 @@ export default function StatusBar({ wsStatus, metrics }) {
       <div style={{ width: 60, height: 3, background: 'var(--border)', borderRadius: 1.5, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${Math.min(100, score * 100).toFixed(0)}%`, background: hColor, transition: 'width 0.5s', borderRadius: 1.5 }} />
       </div>
-      <span style={{ fontFamily: 'JetBrains Mono', fontSize: 10 }}>{(score * 100).toFixed(0)}%</span>
+      <span style={{ fontFamily: 'JetBrains Mono', fontSize: 10 }}><TickNumber value={score * 100} duration={350} />%</span>
       {metrics && <><div className="statusbar-sep" /><span style={{ fontFamily: 'JetBrains Mono' }}>H={parseFloat(metrics.entropy ?? 0).toFixed(2)}b</span></>}
       <span style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono' }}>{clock}</span>
     </footer>

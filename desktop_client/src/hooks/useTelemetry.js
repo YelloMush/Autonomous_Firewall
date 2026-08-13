@@ -4,7 +4,7 @@ const WS_URL = 'ws://localhost:8000/ws/live';
 const RECONNECT_MS = 3000;
 const HISTORY_MAX = 120; // 2 minutes at 1-sample/sec
 
-export function useTelemetry() {
+export function useTelemetry(enabled = true) {
   const [status, setStatus] = useState('connecting'); // 'connecting' | 'live' | 'disconnected'
   const [metrics, setMetrics] = useState(null);
   const [alerts, setAlerts] = useState([]);
@@ -14,7 +14,7 @@ export function useTelemetry() {
   const mountedRef = useRef(true);
 
   const connect = useCallback(() => {
-    if (!mountedRef.current) return;
+    if (!mountedRef.current || !enabled) return;
     if (wsRef.current) { try { wsRef.current.close(); } catch (_) {} }
 
     setStatus('connecting');
@@ -63,22 +63,32 @@ export function useTelemetry() {
     ws.onerror = () => { if (!mountedRef.current) return; setStatus('disconnected'); };
 
     ws.onclose = () => {
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || !enabled) return;
       setStatus('disconnected');
       // Attempt reconnect
       timerRef.current = setTimeout(connect, RECONNECT_MS);
     };
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
     mountedRef.current = true;
-    connect();
+
+    if (enabled) {
+      connect();
+    } else {
+      // Data source switched away from "live" — tear down any active connection
+      // and stop reconnecting rather than fighting the simulation for state.
+      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+      if (wsRef.current) { try { wsRef.current.close(); } catch (_) {} wsRef.current = null; }
+      setStatus('disconnected');
+    }
+
     return () => {
       mountedRef.current = false;
       if (timerRef.current) clearTimeout(timerRef.current);
       if (wsRef.current) { try { wsRef.current.close(); } catch (_) {} }
     };
-  }, [connect]);
+  }, [connect, enabled]);
 
   return { status, metrics, alerts, history };
 }

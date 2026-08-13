@@ -63,7 +63,7 @@ The system demonstrates a complete **DNS → SQS Buffer → AI Cleanser → VPC 
 
 | File | Port | Role |
 |------|------|------|
-| `api_server.py` | `8000` | FastAPI AI Core. Async-polls SQS, runs Isolation Forest inference, triggers circuit breaker. Also serves the web dashboard via `/pitch.html`. |
+| `api_server.py` | `8000` | FastAPI AI Core. Async-polls SQS, runs Isolation Forest inference, triggers circuit breaker. Handles PBKDF2 user authentication and serves the web UI/Desktop Client endpoints. |
 | `tenant_api.py` | `8001` | **NEW** — FastAPI Tenant Control Plane. Handles onboarding: provisions Nginx reverse proxy config, assigns ingress IPs, simulates DNS verification polling. |
 | `analytics_engine.py` | — | Scikit-Learn `IsolationForest` model. 10-second sliding window over 5 traffic features. |
 
@@ -272,6 +272,27 @@ docker run -p 8000:8000 \
 
 ---
 
+## 📦 Desktop Client Installer (Windows, no Python required)
+
+`desktop_client` can be packaged into a standalone Windows installer that end users can just download and run — the AI Core and load-tester are frozen into `.exe`s with PyInstaller, so the installed app has **no dependency on a system Python install**.
+
+```powershell
+pip install pyinstaller pyinstaller-hooks-contrib
+python packaging/build_installer.py
+```
+
+This freezes `core_backend/api_server.py` and `tests/real_world_tester.py` into `packaging/backend_dist/`, then runs `electron-builder` to produce:
+
+```
+desktop_client/release/Aegis Enterprise Setup <version>.exe
+```
+
+Double-clicking that installer sets up the app; on launch it spawns its own bundled backend (`resources/backend/api_server.exe`) instead of shelling out to `python`. The SQLite user/traffic database lives under `%LOCALAPPDATA%\Aegis\` for the packaged build (vs. next to `api_server.py` when run from source).
+
+> Rebuild the installer any time `core_backend/`, `tests/real_world_tester.py`, or `desktop_client/` change — `packaging/backend_dist/` and `desktop_client/release/` are build output, not source, and aren't committed.
+
+---
+
 ## 🧠 AI Model Reference
 
 | Parameter | Value |
@@ -293,7 +314,11 @@ docker run -p 8000:8000 \
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/pitch.html` | `GET` | Serves the React web UI |
+| `/download` | `GET` | Serves the Desktop Client download page |
 | `/ws/live` | `WebSocket` | Live telemetry stream for dashboard |
+| `/api/auth/signup` | `POST` | User registration (shared between web and desktop) |
+| `/api/auth/login` | `POST` | User authentication (PBKDF2 hashed) |
+| `/api/auth/lookup` | `GET` | Checks if an email is registered |
 
 ### Tenant Control Plane — `http://localhost:8001`
 

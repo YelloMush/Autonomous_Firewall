@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import HealthGauge from '../components/HealthGauge';
+import TickNumber from '../components/TickNumber';
+import ConfidenceBadge from '../components/ConfidenceBadge';
+import LatticeSpinner from '../components/LatticeSpinner';
 
 const ACTIONS = [
   { id:'sqs',   icon:'⚙', label:'Analyze SQS Queues',  desc:'Queue depth & message lag',       badge:'AWS',  cls:'badge-amber' },
@@ -42,18 +45,24 @@ export default function OverviewTab({ metrics, alerts }) {
         {/* Gauge card */}
         <div className="surface" style={{ padding:10, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
           <HealthGauge score={score} cbActive={cbActive} size={90} />
+          <ConfidenceBadge score={score} threshold={0.6} />
           <div style={{ width:'100%', display:'grid', gridTemplateColumns:'1fr 1fr', gap:4 }}>
-            {[
-              ['Pkts',  pkt.toLocaleString()],
-              ['H(x)',  `${parseFloat(entropy).toFixed(2)}b`],
-              ['Thr',   threshold > 0 ? threshold.toFixed(1) : '—'],
-              ['CB',    cbActive ? 'ACT' : 'Off', cbActive ? 'var(--ember)' : 'var(--sage)'],
-            ].map(([k, v, c]) => (
-              <div key={k} className="surface-sub" style={{ padding:'4px 6px' }}>
-                <div style={{ fontSize:8, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{k}</div>
-                <div style={{ fontFamily:'JetBrains Mono', fontSize:11, fontWeight:500, color: c ?? 'var(--text-primary)' }}>{v}</div>
-              </div>
-            ))}
+            <div className="surface-sub" style={{ padding:'4px 6px' }}>
+              <div style={{ fontSize:8, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:'0.06em' }}>Pkts</div>
+              <div style={{ fontFamily:'JetBrains Mono', fontSize:11, fontWeight:500, color:'var(--text-primary)' }}><TickNumber value={pkt} /></div>
+            </div>
+            <div className="surface-sub" style={{ padding:'4px 6px' }}>
+              <div style={{ fontSize:8, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:'0.06em' }}>H(x)</div>
+              <div style={{ fontFamily:'JetBrains Mono', fontSize:11, fontWeight:500, color:'var(--text-primary)' }}><TickNumber value={parseFloat(entropy)} decimals={2} />b</div>
+            </div>
+            <div className="surface-sub" style={{ padding:'4px 6px' }}>
+              <div style={{ fontSize:8, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:'0.06em' }}>Thr</div>
+              <div style={{ fontFamily:'JetBrains Mono', fontSize:11, fontWeight:500, color:'var(--text-primary)' }}>{threshold > 0 ? <TickNumber value={threshold} decimals={1} /> : '—'}</div>
+            </div>
+            <div className="surface-sub" style={{ padding:'4px 6px' }}>
+              <div style={{ fontSize:8, color:'var(--text-faint)', textTransform:'uppercase', letterSpacing:'0.06em' }}>CB</div>
+              <div style={{ fontFamily:'JetBrains Mono', fontSize:11, fontWeight:500, color: cbActive ? 'var(--ember)' : 'var(--sage)' }}>{cbActive ? 'ACT' : 'Off'}</div>
+            </div>
           </div>
         </div>
 
@@ -84,8 +93,8 @@ export default function OverviewTab({ metrics, alerts }) {
                 <span style={{ fontSize:14 }}>{a.icon}</span>
                 <span className={`badge ${a.cls}`}>{a.badge}</span>
               </div>
-              <div style={{ fontFamily:'Playfair Display, serif', fontSize:12, fontWeight:500, color:'var(--text-primary)', marginBottom:2 }}>
-                {running === a.id ? 'Running…' : a.label}
+              <div style={{ display:'flex', alignItems:'center', gap:6, fontFamily:'Playfair Display, serif', fontSize:12, fontWeight:500, color:'var(--text-primary)', marginBottom:2 }}>
+                {running === a.id ? (<><LatticeSpinner size={13} /><span>Running…</span></>) : a.label}
               </div>
               <div style={{ fontSize:10, color:'var(--text-muted)', lineHeight:1.3 }}>{a.desc}</div>
               {results[a.id] && (

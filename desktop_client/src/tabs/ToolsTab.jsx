@@ -130,7 +130,7 @@ export default function ToolsTab() {
           </div>
           <div ref={termRef} className="terminal" style={{ flex:1 }}>
             {lines.length === 0
-              ? <span style={{ color:'var(--text-faint)' }}>Select a tool and click Launch.\nOutput streams here via IPC.</span>
+              ? <span style={{ color:'var(--text-faint)' }}>Select a tool and click Launch.<br/>Output streams here via IPC.</span>
               : lines.map(l => <span key={l.id} style={{ color:lc(l.stream) }}>{l.text}</span>)
             }
             {running && <span style={{ color:tool.colour }}>▌</span>}

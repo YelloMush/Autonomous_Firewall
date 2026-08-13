@@ -1,6 +1,8 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import uvicorn
 import sqlite3
 import time
@@ -9,9 +11,30 @@ import traceback
 import json
 import boto3
 import os
+import sys
+import re
+import hmac
+import hashlib
+import secrets
 from analytics_engine import AnalyticsEngine
 
 app = FastAPI(title="Aegis AI Core API")
+
+# ─────────────────────────────────────────────
+# Path resolution — works both as a plain script (BASE_DIR = this file's
+# folder) and as a PyInstaller-frozen executable (BASE_DIR = the exe's
+# folder, since __file__ doesn't point anywhere useful once frozen).
+# ─────────────────────────────────────────────
+FROZEN = getattr(sys, "frozen", False)
+BASE_DIR = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
+
+def _app_data_dir():
+    """Writable per-user directory for runtime data (SQLite DB) when packaged —
+    a frozen app's install directory may not be writable (e.g. Program Files)."""
+    root = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    path = os.path.join(root, "Aegis")
+    os.makedirs(path, exist_ok=True)
+    return path
 
 app.add_middleware(
     CORSMiddleware,
@@ -85,7 +108,7 @@ def get_ec2():
 
 def get_config():
     config = {}
-    config_path = os.path.join(os.path.dirname(__file__), "..", "aws_infrastructure", "aegis_config.txt")
+    config_path = os.path.join(BASE_DIR, "..", "aws_infrastructure", "aegis_config.txt")
     if os.path.exists(config_path):
         with open(config_path, "r") as f:
             for line in f:
@@ -103,7 +126,7 @@ NACL_ID       = CONFIG.get("NACL_ID", "")
 # ─────────────────────────────────────────────
 _db_write_queue: asyncio.Queue = None   # initialised in startup
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "firewall_logs.db")
+DB_PATH = os.path.join(_app_data_dir(), "firewall_logs.db") if FROZEN else os.path.join(BASE_DIR, "firewall_logs.db")
 
 def _init_db():
     """Create tables and enable WAL mode (called once at startup)."""
@@ -122,6 +145,15 @@ def _init_db():
                         timestamp REAL,
                         reason    TEXT
                     )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS users (
+                        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                        email         TEXT UNIQUE NOT NULL,
+                        name          TEXT NOT NULL,
+                        password_hash TEXT NOT NULL,
+                        password_salt TEXT NOT NULL,
+                        tier          TEXT NOT NULL DEFAULT 'shield',
+                        created_at    REAL NOT NULL
+                    )''')
     conn.commit()
     conn.close()
 
@@ -131,6 +163,30 @@ def _get_read_conn():
                            timeout=10, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
+
+# ─────────────────────────────────────────────
+# Auth — real server-side validation + PBKDF2 password hashing,
+# persisted in the same SQLite database (shared by the website and the
+# desktop client, both of which talk to this one API process).
+# ─────────────────────────────────────────────
+EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$")
+VALID_TIERS = {"shield", "enterprise"}
+PBKDF2_ITERATIONS = 100_000
+
+def _get_auth_conn():
+    """Short-lived read/write connection for the infrequent auth endpoints."""
+    conn = sqlite3.connect(DB_PATH, timeout=30)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def _hash_password(password: str, salt: bytes | None = None) -> tuple[str, str]:
+    salt = salt if salt is not None else secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PBKDF2_ITERATIONS)
+    return digest.hex(), salt.hex()
+
+def _verify_password(password: str, salt_hex: str, hash_hex: str) -> bool:
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt_hex), PBKDF2_ITERATIONS)
+    return hmac.compare_digest(digest.hex(), hash_hex)
 
 async def _db_writer_loop():
     """
@@ -473,18 +529,113 @@ def get_telemetry():
     """
     return dict(_latest_metrics)
 
+# ─────────────────────────────────────────────
+# Auth endpoints — shared by web_dashboard/pitch.html and the desktop client.
+# Both talk to this same process, so an account created in one place is
+# immediately usable in the other.
+# ─────────────────────────────────────────────
+class SignupRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    tier: str = "shield"
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+@app.get("/api/auth/lookup")
+def auth_lookup(email: str):
+    """Existence check only (no password data) — used to auto-switch the
+    modal between Sign In / Create Account as the user types their email."""
+    normalized = email.strip().lower()
+    if not EMAIL_RE.match(normalized):
+        return {"exists": False}
+    conn = _get_auth_conn()
+    try:
+        row = conn.execute("SELECT 1 FROM users WHERE email = ?", (normalized,)).fetchone()
+    finally:
+        conn.close()
+    return {"exists": row is not None}
+
+@app.post("/api/auth/signup")
+def auth_signup(payload: SignupRequest):
+    name = payload.name.strip()
+    email = payload.email.strip().lower()
+    password = payload.password
+    tier = payload.tier if payload.tier in VALID_TIERS else "shield"
+
+    if not name:
+        return {"ok": False, "error": "Enter your full name."}
+    if not EMAIL_RE.match(email):
+        return {"ok": False, "error": "Enter a valid email address."}
+    if not password or len(password) < 6:
+        return {"ok": False, "error": "Password must be at least 6 characters."}
+
+    conn = _get_auth_conn()
+    try:
+        if conn.execute("SELECT 1 FROM users WHERE email = ?", (email,)).fetchone():
+            return {"ok": False, "error": "An account already exists for that email."}
+        pwd_hash, salt = _hash_password(password)
+        conn.execute(
+            "INSERT INTO users (email, name, password_hash, password_salt, tier, created_at) VALUES (?,?,?,?,?,?)",
+            (email, name, pwd_hash, salt, tier, time.time()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    return {"ok": True, "user": {"name": name, "email": email, "tier": tier}}
+
+@app.post("/api/auth/login")
+def auth_login(payload: LoginRequest):
+    email = payload.email.strip().lower()
+    password = payload.password
+
+    if not EMAIL_RE.match(email):
+        return {"ok": False, "error": "Enter a valid email address."}
+
+    conn = _get_auth_conn()
+    try:
+        row = conn.execute(
+            "SELECT name, email, password_hash, password_salt, tier FROM users WHERE email = ?",
+            (email,),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    if not row:
+        return {"ok": False, "error": "No account found for that email."}
+    if not _verify_password(password or "", row["password_salt"], row["password_hash"]):
+        return {"ok": False, "error": "Incorrect password."}
+
+    return {"ok": True, "user": {"name": row["name"], "email": row["email"], "tier": row["tier"]}}
+
 # Serve the Web UI (must be at the bottom so API routes match first)
-DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "..", "web_dashboard")
+DASHBOARD_DIR = os.path.join(BASE_DIR, "..", "web_dashboard")
+
+@app.get("/download")
+async def download_page():
+    """Registered explicitly (ahead of the catch-all mount below) so it
+    resolves on a hard page load/refresh, not just client-side navigation."""
+    return FileResponse(os.path.join(DASHBOARD_DIR, "download.html"))
+
 app.mount("/", StaticFiles(directory=DASHBOARD_DIR, html=True), name="static")
 
 # ─────────────────────────────────────────────
 # Entry point
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.freeze_support()
     try:
         print("[*] Starting Distributed AI Firewall Core...")
         uvicorn.run(app, host="127.0.0.1", port=8000, log_level="warning")
     except Exception:
         traceback.print_exc()
     finally:
-        input("Press ENTER to exit…")
+        # Only pause for a keypress when run interactively in a real terminal —
+        # not when spawned headlessly by Electron (dev or packaged), where
+        # stdin isn't a TTY and input() would just raise EOFError on exit.
+        if sys.stdin.isatty():
+            input("Press ENTER to exit…")

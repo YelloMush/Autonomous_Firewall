@@ -22,6 +22,9 @@
   --ember-light:  rgba(179,106,85,0.12);
   --ember-border: rgba(179,106,85,0.30);
   --amber:        #b45309;
+  --amber-light:  rgba(180,83,9,0.12);
+  --amber-border: rgba(180,83,9,0.30);
+  --glass-surface: rgba(255,255,255,0.82);
   --ease-snap:    cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-gauge:   cubic-bezier(0.4, 0, 0.2, 1);
@@ -37,6 +40,7 @@
   --text-faint:   #78716c;
   --border:       #3d3830;
   --border-mid:   #57534e;
+  --glass-surface: rgba(40,37,31,0.82);
 }
 
 @layer base {
@@ -52,6 +56,7 @@
     -webkit-font-smoothing: antialiased;
     line-height: 1.4;
     overflow: hidden;
+    zoom: 1;
   }
 
   h1, h2, h3, h4 { font-family: 'Playfair Display', Georgia, serif; }
@@ -283,6 +288,32 @@
   .no-drag       { -webkit-app-region: no-drag; }
   .drag-region   { -webkit-app-region: drag; }
 
+  /* ── Persistent header (architecture mode + data source) ─────────────────── */
+  .app-header {
+    height: 34px; flex-shrink: 0;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 10px; gap: 10px;
+    -webkit-app-region: drag;
+    user-select: none;
+  }
+  .seg-control {
+    display: flex; border: 1px solid var(--border-mid); border-radius: 4px;
+    overflow: hidden; -webkit-app-region: no-drag;
+  }
+  .seg-btn {
+    border: none; background: transparent; cursor: pointer;
+    padding: 3px 8px; font-size: 10px; font-weight: 500;
+    font-family: 'Inter', sans-serif; color: var(--text-muted);
+    transition: background 120ms, color 120ms;
+    border-right: 1px solid var(--border-mid);
+  }
+  .seg-btn:last-child { border-right: none; }
+  .seg-btn:hover:not(.active) { background: var(--bg-hover); color: var(--text-primary); }
+  .seg-btn.active { background: var(--sage-light); color: var(--sage); }
+  .seg-btn.active.ember { background: var(--ember-light); color: var(--ember); }
+
   /* ── Confidence badge ─────────────────────────────────────────────────────── */
   .confidence-badge {
     display: inline-flex; align-items: center; gap: 3px;
@@ -315,10 +346,17 @@
   }
   .palette-panel {
     width: 100%; max-width: 540px;
-    background: var(--bg-surface);
+    max-height: calc(100vh - 160px);
     border: 1px solid var(--border-mid);
     border-radius: 6px;
-    overflow: hidden;
+    overflow-y: auto;
+  }
+
+  /* ── Subtle glass surface — floating elements only (palette, popovers), never main panels ── */
+  .glass-panel {
+    background: var(--glass-surface);
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
   }
   .palette-result {
     display: flex; align-items: center; gap: 8px;
@@ -341,7 +379,10 @@
   .entropy-seg   { flex: 1; border-radius: 1px; transition: opacity 500ms, background 500ms; }
 
   /* ── Lattice thinking animation ───────────────────────────────────────────── */
-  .lattice-spinner { animation: latticeRotate 8s linear infinite; }
+  .lattice-spinner { animation: latticeRotate 8s linear infinite; transform-origin: center; }
+
+  /* ── Odometer-style value tick (brief pulse on change) ────────────────────── */
+  .value-tick { display: inline-block; animation: thresholdPulse 260ms var(--ease-snap) both; }
 
   /* ── Deploy shimmer ───────────────────────────────────────────────────────── */
   @keyframes shimmer {

@@ -450,4 +450,10 @@ def main():
 
 
 if __name__ == "__main__":
+    # Required before spawning any multiprocessing.Process when this script
+    # is run as a PyInstaller-frozen executable on Windows — without it,
+    # every worker process would re-execute main() from scratch instead of
+    # running as a child, and multiprocessing refuses to start at all.
+    from multiprocessing import freeze_support
+    freeze_support()
     main()

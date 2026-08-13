@@ -40,15 +40,22 @@
     ],
     "extraResources": [
       {
-        "from": "../core_backend",
-        "to": "core_backend",
+        "from": "../packaging/backend_dist/api_server",
+        "to": "backend",
         "filter": [
           "**/*"
         ]
       },
       {
-        "from": "../tests",
-        "to": "tests",
+        "from": "../packaging/backend_dist/tester",
+        "to": "tester",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../web_dashboard",
+        "to": "web_dashboard",
         "filter": [
           "**/*"
         ]
@@ -56,11 +63,10 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "signAndEditExecutable": false
     },
     "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.icns"
+      "target": "dmg"
     },
     "linux": {
       "target": "AppImage"

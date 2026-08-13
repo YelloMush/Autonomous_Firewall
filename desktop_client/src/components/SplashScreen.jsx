@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const STAGES = [
   'Initializing backend…',
@@ -18,6 +18,12 @@ export default function SplashScreen({ onDone }) {
   const [titleIn, setTitleIn] = useState(false);
   const [subIn, setSubIn]     = useState(false);
   const [gaugeIn, setGaugeIn] = useState(false);
+
+  // Latest onDone without making the effect below re-run on every parent
+  // render (App re-renders on each WS reconnect attempt while the backend
+  // is offline, which previously restarted these timers before they fired).
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
     // Shield draw-on completes at ~1.2s, then cascade
@@ -43,10 +49,10 @@ export default function SplashScreen({ onDone }) {
 
     // Fade out at 3.5s
     const t4 = setTimeout(() => setFading(true),  3500);
-    const t5 = setTimeout(() => onDone && onDone(), 3900);
+    const t5 = setTimeout(() => onDoneRef.current && onDoneRef.current(), 3900);
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5); clearInterval(interval); };
-  }, [onDone]);
+  }, []);
 
   const arcLen = CIRC * arcPct;
 
@@ -65,7 +71,7 @@ export default function SplashScreen({ onDone }) {
     >
       {/* Shield SVG line-art */}
       <svg
-        width="48" height="56" viewBox="0 0 48 56"
+        width="56" height="65" viewBox="0 0 48 56"
         fill="none"
         style={{ marginBottom: 14, display: 'block' }}
       >
